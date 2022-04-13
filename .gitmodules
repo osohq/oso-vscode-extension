@@ -1,0 +1,3 @@
+[submodule "oso"]
+	path = oso
+	url = git@github.com:osohq/oso.git
