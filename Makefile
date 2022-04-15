@@ -34,6 +34,7 @@ CARGO_FLAGS ?= --dev
 
 wasm: clean
 	$(MAKE) CARGO_FLAGS=$(CARGO_FLAGS) OUT_DIR=$$(pwd)/out -C oso/polar-language-server build
+	$(MAKE) CARGO_FLAGS=$(CARGO_FLAGS) OUT_DIR=$$(pwd)/out -C oso-service/polar-cloud-language-server build
 
 node_modules: package.json
 	yarn install

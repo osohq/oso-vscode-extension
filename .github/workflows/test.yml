@@ -39,6 +39,9 @@ jobs:
       - name: Run polar-language-server tests
         working-directory: "oso/polar-language-server"
         run: make test
+      - name: Run polar-cloud-language-server tests
+        working-directory: "oso-service/polar-cloud-language-server"
+        run: make test
       - name: Typecheck
         run: make typecheck
       - name: Lint JS library

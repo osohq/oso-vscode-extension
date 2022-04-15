@@ -77,6 +77,25 @@
           },
           "default": [],
           "markdownDescription": "When a workspace contains multiple distinct Oso policies, list of **POSIX-style, relative paths** from workspace folder root to directory containing each Oso policy."
+        },
+        "oso.polarLanguageServer.language": {
+          "type": "string",
+          "enum": ["cloud", "library"],
+          "enumDescriptions": [
+            "The dialect of Polar used in Oso Cloud",
+            "The dialect of Polar used in the Oso library"
+          ],
+          "default": "library"
+        },
+        "oso.polarLanguageServer.trace.server": {
+          "type": "string",
+          "enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VS Code and the language server."
         }
       }
     }

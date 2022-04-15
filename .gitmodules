@@ -1,3 +1,6 @@
 [submodule "oso"]
 	path = oso
 	url = git@github.com:osohq/oso.git
+[submodule "oso-service"]
+	path = oso-service
+	url = git@github.com:osohq/oso-service.git

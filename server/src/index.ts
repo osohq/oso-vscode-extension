@@ -5,6 +5,7 @@ import {
   TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
 import { PolarLanguageServer } from '../../out/polar_language_server'; // eslint-disable-line node/no-unpublished-import
+import { PolarCloudLanguageServer } from '../../out/polar_cloud_language_server'; // eslint-disable-line node/no-unpublished-import
 
 // Create LSP connection
 const connection = createConnection(ProposedFeatures.all);
@@ -13,7 +14,20 @@ const sendDiagnosticsCallback = (params: PublishDiagnosticsParams) =>
   connection.sendDiagnostics(params);
 const telemetryCallback = (event: unknown) =>
   connection.telemetry.logEvent(event);
-const pls = new PolarLanguageServer(sendDiagnosticsCallback, telemetryCallback);
+
+let LanguageServer;
+switch (process.argv[2]) {
+  case 'library':
+    LanguageServer = PolarLanguageServer;
+    break;
+  case 'cloud':
+    LanguageServer = PolarCloudLanguageServer;
+    break;
+  default:
+    throw 'expected language to be library or cloud';
+}
+
+const pls = new LanguageServer(sendDiagnosticsCallback, telemetryCallback);
 
 connection.onNotification((...args) => pls.onNotification(...args));
 

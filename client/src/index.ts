@@ -52,6 +52,7 @@ const outputChannel = window.createOutputChannel(extensionName);
 
 export const osoConfigKey = 'oso.polarLanguageServer';
 const projectRootsKey = 'projectRoots';
+const languageKey = 'language';
 const fullProjectRootsKey = `${osoConfigKey}.${projectRootsKey}`;
 
 // Bi-level map from workspaceFolder -> projectRoot -> client & metrics
@@ -203,7 +204,14 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(deleteWatcher);
     ctx.subscriptions.push(createChangeWatcher);
 
-    const serverOpts = { module: server, transport: TransportKind.ipc };
+    const language = workspace
+      .getConfiguration(osoConfigKey, folder)
+      .get<string>(languageKey, 'error');
+    const serverOpts = {
+      module: server,
+      transport: TransportKind.ipc,
+      args: [language],
+    };
     const clientOpts: LanguageClientOptions = {
       // TODO(gj): seems like I should be able to use a RelativePattern here, but
       // the TS type for DocumentFilter.pattern doesn't seem to like that.
@@ -215,7 +223,12 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
       workspaceFolder: folder,
       outputChannel,
     };
-    const client = new LanguageClient(extensionName, serverOpts, clientOpts);
+    const client = new LanguageClient(
+      osoConfigKey,
+      extensionName,
+      serverOpts,
+      clientOpts
+    );
 
     const recordTelemetry = debounce(event => recordEvent(root, event), 1_000);
     ctx.subscriptions.push(client.onTelemetry(recordTelemetry));
@@ -316,9 +329,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
   // restart all of the corresponding clients.
   context.subscriptions.push(
     workspace.onDidChangeConfiguration(async e => {
-      const affected = folders.filter(folder =>
-        e.affectsConfiguration(fullProjectRootsKey, folder)
-      );
+      const affected = folders.filter(folder => {
+        return (
+          e.affectsConfiguration(fullProjectRootsKey, folder) ||
+          e.affectsConfiguration('oso.polarLanguageServer.language', folder)
+        );
+      });
 
       await updateClients(context)({ added: affected, removed: affected });
     })
