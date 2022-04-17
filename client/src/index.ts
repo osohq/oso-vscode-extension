@@ -31,6 +31,8 @@ import {
   TELEMETRY_INTERVAL,
 } from './telemetry';
 
+import { contributes } from '../../package.json';
+
 // TODO(gj): think about what it would take to support `load_str()` via
 // https://code.visualstudio.com/api/language-extensions/embedded-languages
 
@@ -206,7 +208,11 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 
     const language = workspace
       .getConfiguration(osoConfigKey, folder)
-      .get<string>(languageKey, 'error');
+      .get<string>(
+        languageKey,
+        contributes.configuration.properties['oso.polarLanguageServer.language']
+          .default
+      );
     const serverOpts = {
       module: server,
       transport: TransportKind.ipc,
