@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "path": "a"
+    },
+    {
+      "path": "b"
+    },
+  ],
+  "settings": {
+    "telemetry.telemetryLevel": "off",
+    "oso.polarLanguageServer.language": "library",
+  }
+}

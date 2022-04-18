@@ -11,7 +11,10 @@
 ### Steps to test the extension out in VS Code
 
 1. Open this directory in VS Code
-2. Select the Run->Start Debugging menu option (or press  F5).
+2. Select the `Run->Start Debugging` menu option (or press  F5).
+3. To open a workspace used in the integration tests, select the
+   `File->Open Workspace from File...` menu option and select a
+   `test-fixtures/workspace/<NAME>.code-workspace` file.
 
 ### Steps to build a release version of the extension
 

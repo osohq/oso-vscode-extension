@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "path": "c"
+    },
+    {
+      "path": "d"
+    },
+  ],
+  "settings": {
+    "telemetry.telemetryLevel": "off",
+    "oso.polarLanguageServer.language": "cloud",
+  }
+}
