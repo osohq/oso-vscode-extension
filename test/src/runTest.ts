@@ -23,7 +23,11 @@ void (async function () {
       version: minSupportedVSCodeVersion,
       extensionDevelopmentPath,
       extensionTestsPath: libraryExtensionTestsPath,
-      launchArgs: [libraryWorkspace, '--disable-extensions', '--disable-telemetry'],
+      launchArgs: [
+        libraryWorkspace,
+        '--disable-extensions',
+        '--disable-telemetry',
+      ],
     });
 
     const cloudExtensionTestsPath = resolve(__dirname, './cloud-suite');
@@ -35,7 +39,11 @@ void (async function () {
       version: minSupportedVSCodeVersion,
       extensionDevelopmentPath,
       extensionTestsPath: cloudExtensionTestsPath,
-      launchArgs: [cloudWorkspace, '--disable-extensions', '--disable-telemetry'],
+      launchArgs: [
+        cloudWorkspace,
+        '--disable-extensions',
+        '--disable-telemetry',
+      ],
     });
   } catch (e) {
     console.error(e);
