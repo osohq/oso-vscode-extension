@@ -85,7 +85,8 @@
             "The dialect of Polar used in Oso Cloud",
             "The dialect of Polar used in the Oso library"
           ],
-          "default": "library"
+          "default": "library",
+          "markdownDescription": "Select whether you're using the [library](https://github.com/osohq/oso) or [cloud](https://cloud-docs.osohq.com/) dialect of Polar."
         },
         "oso.polarLanguageServer.trace.server": {
           "type": "string",

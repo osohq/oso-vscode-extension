@@ -1,5 +1,12 @@
 # Oso VS Code Extension
 
+## Selecting a Dialect of Polar
+
+There are two dialects of Polar: one that's used in [the Oso library](https://github.com/osohq/oso),
+and one that's used in [Oso Cloud](https://cloud-docs.osohq.com/).
+Set this extension's "Polar Language Server: Language" setting according to which Oso product
+you're using.
+
 ## Syntax Highlighting
 
 Syntax highlighting for `.polar` files as used by [Oso](https://www.osohq.com).
