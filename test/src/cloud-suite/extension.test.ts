@@ -30,7 +30,6 @@ suite('Diagnostics', () => {
     const diagnostics = (await getDiagnostics(files.length)).sort();
 
     let [uri, [diagnostic]] = diagnostics[0];
-    console.log('diagnostics', diagnostics);
     strictEqual(uri.toString(), files[0]);
     strictEqual(diagnostic.severity, DiagnosticSeverity.Error);
     strictEqual(diagnostic.code, 'UnknownRuleType');
