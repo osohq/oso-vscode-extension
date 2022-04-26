@@ -54,8 +54,10 @@ const outputChannel = window.createOutputChannel(extensionName);
 
 export const osoConfigKey = 'oso.polarLanguageServer';
 const projectRootsKey = 'projectRoots';
-const languageKey = 'language';
+const validationsKey = 'validations';
 const fullProjectRootsKey = `${osoConfigKey}.${projectRootsKey}`;
+const fullValidationsKey =
+  `${osoConfigKey}.${validationsKey}` as 'oso.polarLanguageServer.validations';
 
 // Bi-level map from workspaceFolder -> projectRoot -> client & metrics
 // recorder.
@@ -209,9 +211,8 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     const language = workspace
       .getConfiguration(osoConfigKey, folder)
       .get<string>(
-        languageKey,
-        contributes.configuration.properties['oso.polarLanguageServer.language']
-          .default
+        validationsKey,
+        contributes.configuration.properties[fullValidationsKey].default
       );
     const serverOpts = {
       module: server,
@@ -338,7 +339,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
       const affected = folders.filter(folder => {
         return (
           e.affectsConfiguration(fullProjectRootsKey, folder) ||
-          e.affectsConfiguration('oso.polarLanguageServer.language', folder)
+          e.affectsConfiguration(fullValidationsKey, folder)
         );
       });
 

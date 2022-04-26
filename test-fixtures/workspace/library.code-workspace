@@ -9,6 +9,6 @@
   ],
   "settings": {
     "telemetry.telemetryLevel": "off",
-    "oso.polarLanguageServer.language": "library",
+    "oso.polarLanguageServer.validations": "library",
   }
 }

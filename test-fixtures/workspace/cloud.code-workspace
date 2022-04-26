@@ -9,6 +9,6 @@
   ],
   "settings": {
     "telemetry.telemetryLevel": "off",
-    "oso.polarLanguageServer.language": "cloud",
+    "oso.polarLanguageServer.validations": "cloud",
   }
 }

@@ -78,15 +78,15 @@
           "default": [],
           "markdownDescription": "When a workspace contains multiple distinct Oso policies, list of **POSIX-style, relative paths** from workspace folder root to directory containing each Oso policy."
         },
-        "oso.polarLanguageServer.language": {
+        "oso.polarLanguageServer.validations": {
           "type": "string",
           "enum": ["cloud", "library"],
           "enumDescriptions": [
-            "The dialect of Polar used in Oso Cloud",
-            "The dialect of Polar used in the Oso library"
+            "Oso Cloud",
+            "the Oso Open-Source library"
           ],
           "default": "library",
-          "markdownDescription": "Select whether you're using the [library](https://github.com/osohq/oso) or [cloud](https://cloud-docs.osohq.com/) dialect of Polar."
+          "markdownDescription": "Select whether to validate Polar policies for [Oso Cloud](https://cloud-docs.osohq.com/) or [the Oso Open-Source library](https://github.com/osohq/oso)."
         },
         "oso.polarLanguageServer.trace.server": {
           "type": "string",
