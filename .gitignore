@@ -1,4 +1,5 @@
-!.vscode
 out
 .vscode-test/
 **/*.vsix
+node_modules/
+.make*

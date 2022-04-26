@@ -10,11 +10,8 @@
 
 ### Steps to test the extension out in VS Code
 
-1. Run `make package` in the current directory (where this file lives).
-2. Install the output `.vsix` file into your local VS Code instance: `code
-   --install-extension oso-X.Y.Z.vsix`.
-3. Run the **Developer: Reload Window** (`workbench.action.reloadWindow`)
-   command.
+1. Open this directory in VS Code
+2. Select the Run->Start Debugging menu option (or press  F5).
 
 ### Steps to build a release version of the extension
 
@@ -27,8 +24,8 @@
 
 #### Server
 
-Tests for the server live in the `polar-language-server` crate. Run `make -C
-polar-language-server test` from the root of this repository.
+Tests for the server live in the `oso/polar-language-server` crate. Run `make -C
+oso/polar-language-server test`.
 
 #### Client
 
