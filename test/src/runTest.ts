@@ -13,17 +13,37 @@ void (async function () {
       minVersion(engines.vscode)?.toString() || engines.vscode;
 
     const extensionDevelopmentPath = resolve(__dirname, '../../..');
-    const extensionTestsPath = resolve(__dirname, './suite');
-    const workspace = resolve(
-      __dirname,
-      '../../../test-fixtures/workspace/test.code-workspace'
-    );
 
+    const libraryExtensionTestsPath = resolve(__dirname, './library-suite');
+    const libraryWorkspace = resolve(
+      __dirname,
+      '../../../test-fixtures/workspace/library.code-workspace'
+    );
     await runTests({
       version: minSupportedVSCodeVersion,
       extensionDevelopmentPath,
-      extensionTestsPath,
-      launchArgs: [workspace, '--disable-extensions', '--disable-telemetry'],
+      extensionTestsPath: libraryExtensionTestsPath,
+      launchArgs: [
+        libraryWorkspace,
+        '--disable-extensions',
+        '--disable-telemetry',
+      ],
+    });
+
+    const cloudExtensionTestsPath = resolve(__dirname, './cloud-suite');
+    const cloudWorkspace = resolve(
+      __dirname,
+      '../../../test-fixtures/workspace/cloud.code-workspace'
+    );
+    await runTests({
+      version: minSupportedVSCodeVersion,
+      extensionDevelopmentPath,
+      extensionTestsPath: cloudExtensionTestsPath,
+      launchArgs: [
+        cloudWorkspace,
+        '--disable-extensions',
+        '--disable-telemetry',
+      ],
     });
   } catch (e) {
     console.error(e);

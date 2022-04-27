@@ -30,6 +30,7 @@ suite('Diagnostics', () => {
     const diagnostics = (await getDiagnostics(files.length)).sort();
 
     let [uri, [diagnostic]] = diagnostics[0];
+    console.log('diagnostics', diagnostics);
     strictEqual(uri.toString(), files[0]);
     strictEqual(diagnostic.severity, DiagnosticSeverity.Warning);
     ok(diagnostic.range.start.isEqual(new Position(0, 0)));

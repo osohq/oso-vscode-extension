@@ -4,6 +4,7 @@ module.exports = {
   ignorePatterns: [
     'node_modules', // Self-explanatory.
     'oso', // Submodule handles its own linting.
+    'oso-service', // Submodule handles its own linting.
     'out', // Don't lint built library.
   ],
   overrides: [
