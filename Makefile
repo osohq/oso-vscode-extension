@@ -1,4 +1,4 @@
-.PHONY: test lint typecheck fmtcheck fmt package wasm clean submodules update-submodules build
+.PHONY: test lint typecheck fmtcheck fmt package wasm clean submodules update-submodules build publish
 
 build: wasm
 	yarn esbuild-all
