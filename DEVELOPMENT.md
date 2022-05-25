@@ -23,6 +23,11 @@
 2. The resulting `oso-X.Y.Z.vsix` file can be installed into any VS Code
    instance via: `code --install-extension oso-X.Y.Z.vsix`.
 
+### Publishing
+
+1. Bump the `version` in `package.json`.
+2. Run `make publish`.
+
 ### Running tests
 
 #### Server
