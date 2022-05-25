@@ -12,7 +12,7 @@ import {
 } from 'vscode-languageclient';
 
 import { version as extversion } from '../../package.json';
-import { osoConfigKey } from './index';
+import { osoConfigKey, telemetryKey, validationsKey } from './common';
 
 const ONE_HOUR_IN_MS = 1_000 * 60 * 60;
 const ONE_DAY_IN_MS = ONE_HOUR_IN_MS * 24;
@@ -119,6 +119,10 @@ const vscodeCommonProperties = {
   remotename: env.remoteName || 'none',
 };
 
+const validationkind: string = workspace
+  .getConfiguration(osoConfigKey)
+  .get(validationsKey, 'unknown');
+
 const MIXPANEL_PROJECT_TOKEN = 'd14a9580b894059dffd19437b7ddd7be';
 const mixpanel = Mixpanel.init(MIXPANEL_PROJECT_TOKEN, { protocol: 'https' });
 const trackBatch = (events: Mixpanel.Event[]) =>
@@ -131,8 +135,8 @@ const trackBatch = (events: Mixpanel.Event[]) =>
 
 function telemetryEnabled() {
   const setting = workspace
-    .getConfiguration(`${osoConfigKey}.telemetry`)
-    .get<'default' | 'on' | 'off' | undefined>('enabled');
+    .getConfiguration(osoConfigKey)
+    .get<'default' | 'on' | 'off' | undefined>(telemetryKey);
 
   // Check if user explicitly enabled or disabled telemetry.
   if (setting === 'on') return true;
@@ -292,6 +296,7 @@ type MixpanelMetadata = {
   product: string;
   uikind: string;
   remotename: string;
+  validationkind: string;
 };
 
 type MixpanelEvent = { properties: MixpanelMetadata } & MixpanelLoadEvent;
@@ -313,6 +318,7 @@ async function sendEvents(): Promise<number> {
         ...diagnosticStats,
         ...loadStats,
         ...lspStats,
+        validationkind,
       },
     })
   );
