@@ -3,3 +3,4 @@ out
 **/*.vsix
 node_modules/
 .make*
+.vscode/*.log

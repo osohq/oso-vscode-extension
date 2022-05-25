@@ -43,3 +43,9 @@ node_modules: package.json
 clean: node_modules submodules
 	rm -rf out
 	mkdir -p out
+	rm -f oso.vsix
+
+oso.vsix: package
+
+publish: oso.vsix
+	yarn run publish
