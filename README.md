@@ -40,4 +40,4 @@ personal development behavior. **We will never sell this data**.
 For more info on exactly what is tracked and why, see [this page][docs] in the
 docs.
 
-[docs]: https://docs.osohq.com/reference/tooling/ide/metrics.html
+[docs]: https://cloud-docs.osohq.com/reference/ide-support/metrics
