@@ -33,6 +33,8 @@ import {
 
 import { contributes } from '../../package.json';
 
+import { osoConfigKey, projectRootsKey, validationsKey } from './common';
+
 // TODO(gj): think about what it would take to support `load_str()` via
 // https://code.visualstudio.com/api/language-extensions/embedded-languages
 
@@ -52,9 +54,6 @@ import { contributes } from '../../package.json';
 const extensionName = 'Polar Language Server';
 const outputChannel = window.createOutputChannel(extensionName);
 
-export const osoConfigKey = 'oso.polarLanguageServer';
-const projectRootsKey = 'projectRoots';
-const validationsKey = 'validations';
 const fullProjectRootsKey = `${osoConfigKey}.${projectRootsKey}`;
 const fullValidationsKey =
   `${osoConfigKey}.${validationsKey}` as 'oso.polarLanguageServer.validations';
