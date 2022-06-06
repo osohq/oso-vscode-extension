@@ -4,3 +4,4 @@ out
 node_modules/
 .make*
 .vscode/*.log
+.vscode/settings.json

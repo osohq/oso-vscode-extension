@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "0.27.0",
+  "version": "0.27.1",
   "name": "oso",
   "displayName": "Oso",
   "author": "Oso Security Inc.",
@@ -102,7 +102,24 @@
           "description": "Traces the communication between VS Code and the language server."
         }
       }
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "oso",
+        "title": "Get started with Oso",
+        "description": "Use the appropriate settings to get the most out of Oso.",
+        "steps": [
+          {
+            "id": "usecloud",
+            "title": "Polar validations",
+            "description": "Select whether Polar policies should be validated for **Oso Cloud** or the **Oso Open-Source Library**.\n[Oso Cloud](command:oso.useCloudValidation)\n[Oso Open-Source Library](command:oso.useLibraryValidation)",
+            "media": {
+              "markdown": "media/polar_validations.md"
+            }
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "package": "vsce package --yarn --githubBranch main --out oso.vsix",
