@@ -13,6 +13,7 @@ import {
   workspace,
   WorkspaceFolder,
   WorkspaceFoldersChangeEvent,
+  commands,
 } from 'vscode';
 import {
   LanguageClient,
@@ -343,6 +344,28 @@ export async function activate(context: ExtensionContext): Promise<void> {
       });
 
       await updateClients(context)({ added: affected, removed: affected });
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand('oso.useCloudValidation', async () => {
+      await Promise.race([
+        new Promise(resolve => setTimeout(resolve, 1000)),
+        workspace
+          .getConfiguration(osoConfigKey)
+          .update(validationsKey, 'cloud'),
+      ]);
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand('oso.useLibraryValidation', async () => {
+      await Promise.race([
+        new Promise(resolve => setTimeout(resolve, 1000)),
+        workspace
+          .getConfiguration(osoConfigKey)
+          .update(validationsKey, 'library'),
+      ]);
     })
   );
 
