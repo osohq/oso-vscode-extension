@@ -32,12 +32,12 @@ suite('Diagnostics', () => {
     let [uri, [diagnostic]] = diagnostics[0];
     strictEqual(uri.toString(), files[0]);
     strictEqual(diagnostic.severity, DiagnosticSeverity.Error);
-    strictEqual(diagnostic.code, 'UnknownRuleType');
+    strictEqual(diagnostic.code, 'ParseError::UnrecognizedToken');
     ok(diagnostic.range.start.isEqual(new Position(0, 5)));
     ok(diagnostic.range.end.isEqual(new Position(0, 8)));
     ok(
       diagnostic.message.startsWith(
-        'Extensible rule types f are not supported in Oso Cloud policies.'
+        "Policy failed validation due to parser error: did not expect to find the token 'type'"
       )
     );
 
