@@ -33,8 +33,8 @@ suite('Diagnostics', () => {
     strictEqual(uri.toString(), files[0]);
     strictEqual(diagnostic.severity, DiagnosticSeverity.Error);
     strictEqual(diagnostic.code, 'ParseError::UnrecognizedToken');
-    ok(diagnostic.range.start.isEqual(new Position(0, 5)));
-    ok(diagnostic.range.end.isEqual(new Position(0, 8)));
+    ok(diagnostic.range.start.isEqual(new Position(0, 0)));
+    ok(diagnostic.range.end.isEqual(new Position(0, 4)));
     ok(
       diagnostic.message.startsWith(
         "Policy failed validation due to parser error: did not expect to find the token 'type'"
