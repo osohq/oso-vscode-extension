@@ -1,27 +1,49 @@
 import {
+  CodeActionKind,
+  CodeActionParams,
+  Command,
   createConnection,
+  Diagnostic,
+  Position,
   ProposedFeatures,
   PublishDiagnosticsParams,
+  Range,
   TextDocumentSyncKind,
 } from 'vscode-languageserver/node';
 import { PolarLanguageServer } from '../../out/polar_language_server'; // eslint-disable-line node/no-unpublished-import
 import { PolarCloudLanguageServer } from '../../out/polar_cloud_language_server'; // eslint-disable-line node/no-unpublished-import
+import { DocumentUri } from 'vscode-languageclient';
 
 // Create LSP connection
 const connection = createConnection(ProposedFeatures.all);
 
-const sendDiagnosticsCallback = (params: PublishDiagnosticsParams) =>
+const currentDiagnostics = new Map<DocumentUri, Diagnostic[]>();
+
+const sendDiagnosticsCallback = (params: PublishDiagnosticsParams) => {
+  currentDiagnostics.set(params.uri, params.diagnostics);
   connection.sendDiagnostics(params);
+};
 const telemetryCallback = (event: unknown) =>
   connection.telemetry.logEvent(event);
 
 let LanguageServer;
+let switchValidationsCommand: Command;
 switch (process.argv[2]) {
   case 'library':
     LanguageServer = PolarLanguageServer;
+    switchValidationsCommand = {
+      title:
+        'Validate Polar policies for Oso Cloud rather than for Oso Library',
+      command: 'oso.useCloudValidation',
+    };
     break;
   case 'cloud':
     LanguageServer = PolarCloudLanguageServer;
+    switchValidationsCommand = {
+      title:
+        'Validate Polar policies for Oso Library rather than for Oso Cloud',
+      command: 'oso.useLibraryValidation',
+    };
     break;
   default:
     throw 'expected language to be library or cloud';
@@ -29,11 +51,43 @@ switch (process.argv[2]) {
 
 const pls = new LanguageServer(sendDiagnosticsCallback, telemetryCallback);
 
+function positionIsBeforeOrEqual(before: Position, after: Position): boolean {
+  if (before.line === after.line) {
+    return before.character <= after.character;
+  } else {
+    return before.line < after.line;
+  }
+}
+
+function rangeOverlaps(outer: Range, inner: Range): boolean {
+  return (
+    positionIsBeforeOrEqual(outer.start, inner.start) &&
+    positionIsBeforeOrEqual(inner.end, outer.end)
+  );
+}
+
+connection.onCodeAction((params: CodeActionParams) => {
+  return (
+    currentDiagnostics
+      .get(params.textDocument.uri)
+      ?.filter(diagnostic => rangeOverlaps(diagnostic.range, params.range))
+      .map(diagnostic => ({
+        title: switchValidationsCommand.title,
+        kind: CodeActionKind.QuickFix,
+        diagnostics: [diagnostic],
+        command: switchValidationsCommand,
+      })) || []
+  );
+});
+
 connection.onNotification((...args) => pls.onNotification(...args));
 
 connection.onInitialize(() => {
   return {
     capabilities: {
+      codeActionProvider: {
+        codeActionKinds: [CodeActionKind.QuickFix],
+      },
       textDocumentSync: {
         openClose: true,
         // NOTE(gj): we should set this to `{ includeText: true }` if we care
