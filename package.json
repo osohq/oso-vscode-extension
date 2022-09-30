@@ -46,7 +46,7 @@
       {
         "language": "polar",
         "scopeName": "source.polar",
-        "path": "./syntaxes/polar.tmLanguage.json"
+        "path": "./polar-grammar/syntaxes/polar.tmLanguage.json"
       }
     ],
     "configuration": {
