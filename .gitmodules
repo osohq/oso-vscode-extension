@@ -4,3 +4,6 @@
 [submodule "oso-service"]
 	path = oso-service
 	url = git@github.com:osohq/oso-service.git
+[submodule "syntaxes"]
+	path = syntaxes
+	url = git@github.com:osohq/polar-grammar.git
