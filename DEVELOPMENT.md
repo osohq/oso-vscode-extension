@@ -25,8 +25,31 @@
 
 ### Publishing
 
-1. Bump the `version` in `package.json`.
-2. Run `make publish`.
+#### Prerequisites
+
+* Bump the `version` in `package.json`.
+* Install the Visual Studio Code Extension Manager, `vsce`:
+   ```bash
+   npm install -g @vscode/vsce
+   ```
+* Login to Visual Studio Marketplace (the PAT is in 1Password: VSCode publish api key):
+   ```bash
+   vsce login osohq
+   ```
+* Install the `osvx` CLI:
+   ```bash
+   npm install -g ovsx
+   ```
+
+#### Publish to Visual Studio Marketplace
+* Run `make publish`.
+
+#### Publish to Open VSX Registry
+* Run `make package`. This creates an `oso.vsix` file in the current directory.
+* Publish to the Open VSX Registry (the PAT is in 1Password: Open VSX):
+   ```bash
+   osvx publish -p ${PAT} oso.vsix
+   ```
 
 ### Running tests
 
