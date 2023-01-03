@@ -45,7 +45,7 @@
 - Publish to the Open VSX Registry (the PAT is in 1Password: Open VSX):
 
    ```bash
-   yarn osvx publish -p ${PAT} oso.vsix
+   yarn ovsx publish -p ${PAT} oso.vsix
    ```
 
 ### Running tests
