@@ -35,11 +35,7 @@ suite('Diagnostics', () => {
     strictEqual(diagnostic.code, 'ParseError::UnrecognizedToken');
     ok(diagnostic.range.start.isEqual(new Position(0, 0)));
     ok(diagnostic.range.end.isEqual(new Position(0, 4)));
-    ok(
-      diagnostic.message.startsWith(
-        "Policy failed validation due to parser error: did not expect to find the token 'type'"
-      )
-    );
+    strictEqual(diagnostic.message, "did not expect to find the token 'type'");
 
     [uri, [diagnostic]] = diagnostics[1];
     strictEqual(uri.toString(), files[1]);
@@ -47,10 +43,9 @@ suite('Diagnostics', () => {
     strictEqual(diagnostic.code, 'ParseError::UnrecognizedEOF');
     ok(diagnostic.range.start.isEqual(new Position(0, 6)));
     ok(diagnostic.range.end.isEqual(new Position(0, 6)));
-    ok(
-      diagnostic.message.startsWith(
-        'Policy failed validation due to parser error: hit the end of the file unexpectedly. Did you forget a semi-colon'
-      )
+    strictEqual(
+      diagnostic.message,
+      'hit the end of the file unexpectedly. Did you forget a semi-colon'
     );
   });
 });
