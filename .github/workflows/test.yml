@@ -22,10 +22,10 @@ jobs:
             ~/.cargo/git
             oso/target
           key: ${{ runner.os }}-cargo-check-${{ hashFiles('**/Cargo.lock') }}
-      - name: Use Node.js 12
+      - name: Use Node.js 22
         uses: actions/setup-node@v1
         with:
-          node-version: "12"
+          node-version: '22'
       - name: Check formatting of JS library
         run: make fmtcheck
       - name: Install Rust stable toolchain
@@ -38,10 +38,10 @@ jobs:
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
       - name: Run polar-language-server tests
-        working-directory: "oso/polar-language-server"
+        working-directory: 'oso/polar-language-server'
         run: make test
       - name: Run polar-cloud-language-server tests
-        working-directory: "oso-service/polar-cloud-language-server"
+        working-directory: 'oso-service/polar-cloud-language-server'
         run: make test
       - name: Typecheck
         run: make typecheck
@@ -75,10 +75,10 @@ jobs:
           toolchain: stable
           override: true
           target: wasm32-unknown-unknown
-      - name: Use Node.js 12
+      - name: Use Node.js 22
         uses: actions/setup-node@v1
         with:
-          node-version: "12"
+          node-version: '22'
       # TODO(gj): remove once https://github.com/rustwasm/wasm-pack/issues/1097 is resolved
       - name: Install wasm-pack 0.10.1
         if: runner.os == 'Windows'
