@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
 import { createHash } from 'crypto';
-import os from 'os';
+import * as os from 'os';
 
 import type { DebouncedFunc } from 'lodash';
 import { env, OutputChannel, UIKind, Uri, version, workspace } from 'vscode';
@@ -11,7 +11,7 @@ import {
   DiagnosticSeverity as Severity,
 } from 'vscode-languageclient';
 
-import { version as extversion } from '../../package.json';
+import { version as extversion } from '../package.json';
 import { osoConfigKey, telemetryKey, validationsKey } from './common';
 
 const ONE_HOUR_IN_MS = 1_000 * 60 * 60;

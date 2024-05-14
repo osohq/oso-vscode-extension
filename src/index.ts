@@ -16,6 +16,7 @@ import {
   commands,
 } from 'vscode';
 import {
+  Executable,
   LanguageClient,
   LanguageClientOptions,
   TransportKind,
@@ -31,8 +32,6 @@ import {
   TELEMETRY_STATE_KEY,
   TELEMETRY_INTERVAL,
 } from './telemetry';
-
-import { contributes } from '../../package.json';
 
 import { osoConfigKey, projectRootsKey, validationsKey } from './common';
 
@@ -208,16 +207,9 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(deleteWatcher);
     ctx.subscriptions.push(createChangeWatcher);
 
-    const language = workspace
-      .getConfiguration(osoConfigKey, folder)
-      .get<string>(
-        validationsKey,
-        contributes.configuration.properties[fullValidationsKey].default
-      );
-    const serverOpts = {
-      module: server,
-      transport: TransportKind.ipc,
-      args: [language],
+    const serverOpts: Executable = {
+      command: 'oso-cloud',
+      args: ['lsp'],
     };
     const clientOpts: LanguageClientOptions = {
       // TODO(gj): seems like I should be able to use a RelativePattern here, but

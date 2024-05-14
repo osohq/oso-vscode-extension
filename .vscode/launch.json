@@ -15,7 +15,10 @@
 			"outFiles": [
 				"${workspaceFolder}/out/**/*.js"
 			],
-			"preLaunchTask": "make"
+			"preLaunchTask": {
+				"type": "npm",
+				"script": "build",
+			}
 		},
 	]
 }
