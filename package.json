@@ -88,7 +88,7 @@
             "Oso Cloud",
             "the Oso Open-Source library"
           ],
-          "default": "library",
+          "default": "cloud",
           "markdownDescription": "Select whether to validate Polar policies for [Oso Cloud](https://cloud-docs.osohq.com/) or [the Oso Open-Source library](https://github.com/osohq/oso)."
         },
         "oso.polarLanguageServer.trace.server": {
