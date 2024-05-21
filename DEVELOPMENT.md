@@ -28,6 +28,15 @@
 #### Prerequisites
 
 - Bump the `version` in `package.json`.
+- Make sure the PR is merged into `main` and you've pulled down the latest for `main` after merging.
+- Download oso.vsix from GitHub:
+   - Navigate to the [Actions][https://github.com/osohq/oso-vscode-extension/actions] tab.
+   - In the sidebar, select "Release VSCode Extension" from the list of workflows.
+   - Click on the most recent workflow run that you created.
+   - Scroll down to the Artifacts section and download `oso_vscode_extension.zip` which contains `oso.vsix`.
+   - Move `oso.vsix` to the `oso-vscode-extension` directory.
+- Run `make submodules` in the `oso-vscode-extension` directory.
+- Run `yarn` (if you haven't already done so in this project).
 - Login to Visual Studio Marketplace (the PAT is in 1Password: VSCode publish
   api key):
 
@@ -37,12 +46,12 @@
 
 #### Publish to Visual Studio Marketplace
 
-- Run `make publish`.
+- Run `yarn run publish`.
 
 #### Publish to Open VSX Registry
 
-- Run `make package`. This creates an `oso.vsix` file in the current directory.
-- Publish to the Open VSX Registry (the PAT is in 1Password: Open VSX):
+- Run `export PAT={the PAT is in 1Password: Open VSX}`.
+- Publish to the Open VSX Registry:
 
    ```bash
    yarn ovsx publish -p ${PAT} oso.vsix
