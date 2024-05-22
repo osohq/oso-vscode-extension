@@ -35,7 +35,7 @@
    - Click on the most recent workflow run that you created.
    - Scroll down to the Artifacts section and download `oso_vscode_extension.zip` which contains `oso.vsix`.
    - Move `oso.vsix` to the `oso-vscode-extension` directory.
-- Run `make submodules` in the `oso-vscode-extension` directory.
+- Run `make submodules` in the `oso-vscode-extension` directory (if you haven't already done so in this project).
 - Run `yarn` (if you haven't already done so in this project).
 - Login to Visual Studio Marketplace (the PAT is in 1Password: VSCode publish
   api key):
