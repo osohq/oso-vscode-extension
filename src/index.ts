@@ -209,7 +209,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 
     const serverOpts: Executable = {
       command: 'oso-cloud',
-      args: ['lsp'],
+      args: ['experimental', 'lsp'],
     };
     const clientOpts: LanguageClientOptions = {
       // TODO(gj): seems like I should be able to use a RelativePattern here, but
