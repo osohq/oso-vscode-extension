@@ -72,7 +72,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^([^/]+\/)*[^/]+\/?$",
+            "pattern": "^([^/]+/)*[^/]+/?$",
             "patternErrorMessage": "Project root must be a POSIX-style relative path that doesn't begin with a forward slash and has its path segments separated by single forward slashes. E.g.: `mypath` or `my/path/` or `./my/path`"
           },
           "default": [],
@@ -102,7 +102,7 @@
           "description": "Traces the communication between VS Code and the language server."
         },
         "oso.polarLanguageServer.server.path": {
-          "type": [null, "string"],
+          "type": ["null", "string"],
           "scope": "machine-overridable",
           "default": null,
           "description": "Path to oso-cloud binary (points to oso-cloud on the user's path by default)."

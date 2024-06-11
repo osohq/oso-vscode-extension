@@ -15,6 +15,7 @@ import {
   WorkspaceFoldersChangeEvent,
   commands,
 } from 'vscode';
+import * as vscode from 'vscode';
 import {
   Executable,
   LanguageClient,
@@ -164,49 +165,110 @@ async function validateRoots(root: Uri, candidates: string[]) {
 }
 
 
-async function getBinaryPath(folder: WorkspaceFolder): Promise<string> {
-  let customPath = workspace.getConfiguration(osoConfigKey, folder).get<string | null>("server.path");
+// TODO extract to module?
+const DEFAULT_OSO_CLOUD_BINARY_PATH = "oso-cloud";
+const INSTALL_OSO_CLOUD_COMMAND = "curl -L https://cloud.osohq.com/install.sh | bash";
+const OSO_CLOUD_PATH_CONFIG = "server.path";
+
+function getBinaryPath(folder: WorkspaceFolder): string {
+  let customPath = workspace.getConfiguration(osoConfigKey, folder).get<string | null>(OSO_CLOUD_PATH_CONFIG);
   if (customPath !== null && customPath.startsWith("~/")) {
     customPath = os.homedir() + customPath.slice(1); // expand ~ into absolute path
   }
-  const path =  customPath ?? "oso-cloud"; // TOD subscribe to changes
-
-  if (!osoCloudBinaryExists(path)) {
-    // TODO make nice- check for this in the "walkthrough"?
-    throw new Error("Couldn't find an oso-cloud binary on your path. plz to install????");
-  }
-  if (!(await osoCloudNewEnough(path))) {
-    throw new Error("Your version of oso-cloud is too old. Update it????");
-  }
+  const path = customPath ?? DEFAULT_OSO_CLOUD_BINARY_PATH; // TODO subscribe to changes?
   return path;
 }
 
-function osoCloudBinaryExists(path: string): boolean {
-  const response = spawnSync(path, ["version"]);
-  // TODO print errors
-  return response.status === 0;
+function installOsoCloud(terminalWindowTitle: string) {
+  const terminal = window.createTerminal({ name: terminalWindowTitle });
+  terminal.show();
+  terminal.sendText(INSTALL_OSO_CLOUD_COMMAND);
+  // TODO restart extension?
 }
 
-async function osoCloudNewEnough(path: string): Promise<boolean> {
-  // TODO nag if there's an update available?
-  return await text(spawn(path, ["version"]).stdout.setEncoding("utf8")).then((versionOutput) => {
-    console.log("hi", versionOutput);
-    // format is `version: ____ sha: ____
-    const match = versionOutput.match(/^version: (?<version>.+) sha: .+/);
-    if (!match || !match.groups) {
-      console.log("some problem with match");
-      console.log(match);
-      return false;
-    }
-    const { version } = match.groups;
-    console.log("found oso-cloud version: ", version);
+function ensureBinaryExists(path: string): boolean {
+  const response = spawnSync(path, ["version"]);
+  const binaryExists = response.status === 0;
 
-    return semverSatisfies(version, ">=0.15.0");
-  }, (err) => {
-    // TODO ???
-    console.log("ERROR!", err)
-    return false;
-  });
+  if (!binaryExists) {
+    if (path === DEFAULT_OSO_CLOUD_BINARY_PATH) {
+      const installIt = "Install oso-cloud";
+      const showMeInstructions = "Show install instructions";
+      window.showErrorMessage(
+        "Couldn't find an oso-cloud binary on your path." +
+        " Install oso-cloud and add it to your path?",
+        installIt,
+        showMeInstructions,
+      ).then((selection) => {
+        if (selection === installIt) {
+          installOsoCloud("Install oso-cloud");
+        } else if (selection === showMeInstructions) {
+          vscode.env.openExternal(Uri.parse("https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli"));
+        }
+      });
+    } else {
+      window.showErrorMessage(
+        `Couldn't find an oso-cloud binary at \`${path}\`. Either remove \`config.${OSO_CLOUD_PATH_CONFIG}\`` +
+        " from your `settings.json` or ensure a runnable binary exists at that path."
+      );
+    }
+
+  }
+  return binaryExists;
+}
+
+function extractVersionInfo(osoCloudBinaryPath: string) {
+  let response = spawnSync(osoCloudBinaryPath, ["version"]); // run `oso-cloud version`
+
+  let stderr = response.stderr.toString('utf8');
+  let updateAvailable = stderr.includes("update available");
+
+  let versionOutput = response.stdout.toString('utf8');
+  const match = versionOutput.match(/^version: (?<version>.+) sha: .+/);
+  if (!match || !match.groups) {
+    throw new Error(`Got an unexpected output format from \`${osoCloudBinaryPath} version\`- please double-check that this is a runnable oso-cloud binary.`);
+  }
+  const { version } = match.groups;
+
+  return { version, updateAvailable };
+}
+
+
+function ensureBinaryIsFresh(path: string): boolean {
+  const { version, updateAvailable } = extractVersionInfo(path);
+  const tooOld = !semverSatisfies(version, ">=0.15.0"); // Minimum version that has `oso-cloud experimental lsp`
+
+  if (tooOld) {
+    const updateIt = "Update oso-cloud";
+    const showMe = "Show me how";
+    window.showErrorMessage(
+      "This extension doesn't support your version of oso-cloud. To continue, update oso-cloud.",
+      updateIt,
+      showMe
+    ).then((selection) => {
+      if (selection === updateIt) {
+        installOsoCloud("Update oso-cloud");
+      } else if (selection === showMe) {
+        vscode.env.openExternal(Uri.parse("https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli"));
+      }
+    });
+  }
+  if (updateAvailable && !tooOld) {
+    const updateIt = "Update oso-cloud";
+    const showMe = "Show me how";
+    window.showWarningMessage(
+      "An update is available to oso-cloud. Update it now?",
+      updateIt,
+      showMe
+    ).then((selection) => {
+      if (selection === updateIt) {
+        installOsoCloud("Update oso-cloud");
+      } else if (selection === showMe) {
+        vscode.env.openExternal(Uri.parse("https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli"));
+      }
+    });
+  }
+  return !tooOld;
 }
 
 
@@ -260,7 +322,16 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(createChangeWatcher);
 
     // hmm
-    const path = await getBinaryPath(folder);
+    const path = getBinaryPath(folder);
+
+    if (!ensureBinaryExists(path)) {
+      return; // ok?
+    }
+    if (!ensureBinaryIsFresh(path)) {
+      return;
+    }
+
+
     const serverOpts: Executable = {
       command: path,
       args: ['experimental', 'lsp'],
@@ -351,7 +422,7 @@ function updateClients(context: ExtensionContext) {
 // Create function in global context so we have access to it in `deactivate()`.
 // See corresponding comment in `activate()` where we update the stored
 // function.
-let persistState: (state: TelemetryCounters) => Promise<void> = async () => {}; // eslint-disable-line @typescript-eslint/no-empty-function
+let persistState: (state: TelemetryCounters) => Promise<void> = async () => { }; // eslint-disable-line @typescript-eslint/no-empty-function
 
 export async function activate(context: ExtensionContext): Promise<void> {
   //console.log("WAZAP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
