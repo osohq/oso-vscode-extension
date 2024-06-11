@@ -34,6 +34,11 @@ import {
 } from './telemetry';
 
 import { osoConfigKey, projectRootsKey, validationsKey } from './common';
+import { spawn, spawnSync } from 'child_process';
+import { text } from 'stream/consumers';
+import semverSatisfies = require('semver/functions/satisfies');
+import * as os from 'os';
+
 
 // TODO(gj): think about what it would take to support `load_str()` via
 // https://code.visualstudio.com/api/language-extensions/embedded-languages
@@ -158,6 +163,53 @@ async function validateRoots(root: Uri, candidates: string[]) {
   return projectRoots;
 }
 
+
+async function getBinaryPath(folder: WorkspaceFolder): Promise<string> {
+  let customPath = workspace.getConfiguration(osoConfigKey, folder).get<string | null>("server.path");
+  if (customPath !== null && customPath.startsWith("~/")) {
+    customPath = os.homedir() + customPath.slice(1); // expand ~ into absolute path
+  }
+  const path =  customPath ?? "oso-cloud"; // TOD subscribe to changes
+
+  if (!osoCloudBinaryExists(path)) {
+    // TODO make nice- check for this in the "walkthrough"?
+    throw new Error("Couldn't find an oso-cloud binary on your path. plz to install????");
+  }
+  if (!(await osoCloudNewEnough(path))) {
+    throw new Error("Your version of oso-cloud is too old. Update it????");
+  }
+  return path;
+}
+
+function osoCloudBinaryExists(path: string): boolean {
+  const response = spawnSync(path, ["version"]);
+  // TODO print errors
+  return response.status === 0;
+}
+
+async function osoCloudNewEnough(path: string): Promise<boolean> {
+  // TODO nag if there's an update available?
+  return await text(spawn(path, ["version"]).stdout.setEncoding("utf8")).then((versionOutput) => {
+    console.log("hi", versionOutput);
+    // format is `version: ____ sha: ____
+    const match = versionOutput.match(/^version: (?<version>.+) sha: .+/);
+    if (!match || !match.groups) {
+      console.log("some problem with match");
+      console.log(match);
+      return false;
+    }
+    const { version } = match.groups;
+    console.log("found oso-cloud version: ", version);
+
+    return semverSatisfies(version, ">=0.15.0");
+  }, (err) => {
+    // TODO ???
+    console.log("ERROR!", err)
+    return false;
+  });
+}
+
+
 async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
   const server = ctx.asAbsolutePath(join('out', 'server.js'));
 
@@ -207,8 +259,10 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(deleteWatcher);
     ctx.subscriptions.push(createChangeWatcher);
 
+    // hmm
+    const path = await getBinaryPath(folder);
     const serverOpts: Executable = {
-      command: 'oso-cloud',
+      command: path,
       args: ['experimental', 'lsp'],
     };
     const clientOpts: LanguageClientOptions = {
@@ -266,6 +320,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
   clients.set(folder.uri.toString(), workspaceFolderClients);
 }
 
+
 function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
@@ -299,6 +354,7 @@ function updateClients(context: ExtensionContext) {
 let persistState: (state: TelemetryCounters) => Promise<void> = async () => {}; // eslint-disable-line @typescript-eslint/no-empty-function
 
 export async function activate(context: ExtensionContext): Promise<void> {
+  //console.log("WAZAP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   // Seed extension-local state from persisted VS Code memento-backed state.
   seedState(context.globalState.get<TelemetryCounters>(TELEMETRY_STATE_KEY));
 
@@ -388,3 +444,4 @@ export async function deactivate(): Promise<void> {
   // Persist monthly/daily counter/timestamp state.
   return persistState(counters);
 }
+
