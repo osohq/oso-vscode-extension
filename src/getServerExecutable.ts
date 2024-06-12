@@ -1,32 +1,25 @@
-import {
-  Uri,
-  window,
-  workspace,
-  WorkspaceFolder
-} from 'vscode';
+
 import * as vscode from 'vscode';
-import { osoConfigKey } from './common';
+import { osoConfigKey, serverPathConfig } from './common';
 import { spawnSync } from 'child_process';
 import semverSatisfies = require('semver/functions/satisfies');
 import * as os from 'os';
 import { Executable } from 'vscode-languageclient/node';
 
 const DEFAULT_OSO_CLOUD_BINARY_PATH = "oso-cloud";
-const INSTALL_OSO_CLOUD_COMMAND = "curl -L https://cloud.osohq.com/install.sh | bash";
-const OSO_CLOUD_PATH_CONFIG = "server.path";
 
 /**
  * Returns an Executable for running the Polar LSP in the given workspace folder.
  * Also checks to ensure that the binary is installed and sufficiently new. If not, shows the user
  * the appropriate errors / prompts and returns false.
  */
-export function getServerExecutableOrShowErrors(folder: WorkspaceFolder): Executable | false {
+export function getServerExecutableOrShowErrors(folder: vscode.WorkspaceFolder, ctx: vscode.ExtensionContext): Executable | false {
   const path = getBinaryPath(folder);
 
-  if (!ensureBinaryExists(path)) {
+  if (!ensureBinaryExists(path, ctx)) {
     return false; // this function shows users an error message if necessary
   }
-  if (!ensureBinaryIsFresh(path)) {
+  if (!ensureBinaryIsFresh(path, ctx)) {
     return false; // this function shows users an error message if necessary
   }
 
@@ -39,20 +32,39 @@ export function getServerExecutableOrShowErrors(folder: WorkspaceFolder): Execut
 /**
  * @returns the configured path to the oso-cloud binary for this workspace
  */
-function getBinaryPath(folder: WorkspaceFolder): string {
-  let customPath = workspace.getConfiguration(osoConfigKey, folder).get<string | null>(OSO_CLOUD_PATH_CONFIG);
+function getBinaryPath(folder: vscode.WorkspaceFolder): string {
+  let customPath = vscode.workspace.getConfiguration(osoConfigKey, folder).get<string | null>(serverPathConfig);
   if (customPath !== null && customPath.startsWith("~/")) {
     customPath = os.homedir() + customPath.slice(1); // expand ~ into absolute path
   }
-  const path = customPath ?? DEFAULT_OSO_CLOUD_BINARY_PATH; // TODO subscribe to changes?
+  const path = customPath ?? DEFAULT_OSO_CLOUD_BINARY_PATH;
   return path;
 }
 
-function installOsoCloud(terminalWindowTitle: string) {
-  const terminal = window.createTerminal({ name: terminalWindowTitle });
+function installOsoCloud(terminalWindowTitle: string, ctx: vscode.ExtensionContext) {
+  const terminal = vscode.window.createTerminal({ name: terminalWindowTitle });
+  ctx.subscriptions.push(vscode.window.onDidCloseTerminal((t) => {
+    if (t === terminal && t.exitStatus.code === 0) {
+      vscode.window.showInformationMessage(
+        `To use the newly installed oso-cloud binary, you must reload the window.`,
+        'Reload now'
+      ).then((selection) => {
+        if (selection) {
+          void vscode.commands.executeCommand("workbench.action.reloadWindow");
+        }
+      })
+    }
+  }));
   terminal.show();
-  terminal.sendText(INSTALL_OSO_CLOUD_COMMAND);
-  // TODO restart extension?
+  terminal.sendText("set -o pipefail"); // So we can keep the window open if the installation fails
+  // TODO might be nice if we could keep the terminal window open after exiting the process, so users
+  // can see what we did. not entirely sure if this is possible.
+  terminal.sendText("curl -L https://cloud.osohq.com/install.sh | bash && exit");
+
+}
+
+function openCLIDocs() {
+  vscode.env.openExternal(vscode.Uri.parse("https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli"));
 }
 
 /**
@@ -61,7 +73,7 @@ function installOsoCloud(terminalWindowTitle: string) {
  * 
  * @returns true if the binary exists and runs successfully, else false
  */
-function ensureBinaryExists(path: string): boolean {
+function ensureBinaryExists(path: string, ctx: vscode.ExtensionContext): boolean {
   const response = spawnSync(path, ["version"]);
   const binaryExists = response.status === 0;
 
@@ -69,21 +81,21 @@ function ensureBinaryExists(path: string): boolean {
     if (path === DEFAULT_OSO_CLOUD_BINARY_PATH) {
       const installIt = "Install oso-cloud";
       const showMeInstructions = "Show install instructions";
-      window.showErrorMessage(
+      vscode.window.showErrorMessage(
         "Couldn't find an oso-cloud binary on your path." +
         " Install oso-cloud and add it to your path?",
         installIt,
         showMeInstructions
       ).then((selection) => {
         if (selection === installIt) {
-          installOsoCloud("Install oso-cloud");
+          installOsoCloud("Install oso-cloud", ctx);
         } else if (selection === showMeInstructions) {
-          vscode.env.openExternal(Uri.parse("https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli"));
+          openCLIDocs();
         }
       });
     } else {
-      window.showErrorMessage(
-        `Couldn't find an oso-cloud binary at \`${path}\`. Either remove \`config.${OSO_CLOUD_PATH_CONFIG}\`` +
+      vscode.window.showErrorMessage(
+        `Couldn't find an oso-cloud binary at \`${path}\`. Either remove \`${osoConfigKey}.${serverPathConfig}\`` +
         " from your `settings.json` or ensure a runnable binary exists at that path."
       );
     }
@@ -114,37 +126,37 @@ function extractVersionInfo(osoCloudBinaryPath: string) {
  * 
  * @return true if the oso-cloud binary at the given path is recent enough to support the Polar LSP, else false
  */
-function ensureBinaryIsFresh(path: string): boolean {
+function ensureBinaryIsFresh(path: string, ctx: vscode.ExtensionContext): boolean {
   const { version, updateAvailable } = extractVersionInfo(path);
   const tooOld = !semverSatisfies(version, ">=0.15.0"); // Minimum version that has `oso-cloud experimental lsp`
 
   if (tooOld) {
     const updateIt = "Update oso-cloud";
     const showMe = "Show me how";
-    window.showErrorMessage(
+    vscode.window.showErrorMessage(
       "This extension doesn't support your version of oso-cloud. To continue, update oso-cloud.",
       updateIt,
       showMe
     ).then((selection) => {
       if (selection === updateIt) {
-        installOsoCloud("Update oso-cloud");
+        installOsoCloud("Update oso-cloud", ctx);
       } else if (selection === showMe) {
-        vscode.env.openExternal(Uri.parse("https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli"));
+        openCLIDocs();
       }
     });
   }
   if (updateAvailable && !tooOld) {
     const updateIt = "Update oso-cloud";
     const showMe = "Show me how";
-    window.showWarningMessage(
+    vscode.window.showWarningMessage(
       "An update is available to oso-cloud. Update it now?",
       updateIt,
       showMe
     ).then((selection) => {
       if (selection === updateIt) {
-        installOsoCloud("Update oso-cloud");
+        installOsoCloud("Update oso-cloud", ctx);
       } else if (selection === showMe) {
-        vscode.env.openExternal(Uri.parse("https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli"));
+        openCLIDocs();
       }
     });
   }

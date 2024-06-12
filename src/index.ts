@@ -33,9 +33,7 @@ import {
   TELEMETRY_INTERVAL,
 } from './telemetry';
 
-import { osoConfigKey, projectRootsKey, validationsKey } from './common';
-import { spawn } from 'child_process';
-import { text } from 'stream/consumers';
+import { osoConfigKey, projectRootsKey, serverPathConfig, validationsKey } from './common';
 import { getServerExecutableOrShowErrors } from './getServerExecutable';
 
 
@@ -212,7 +210,24 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(deleteWatcher);
     ctx.subscriptions.push(createChangeWatcher);
 
-    const serverOpts = getServerExecutableOrShowErrors(folder);
+
+    ctx.subscriptions.push(workspace.onDidChangeConfiguration(async (e) => {
+      const serverPathConfigKey = `${osoConfigKey}.${serverPathConfig}`;
+        if (e.affectsConfiguration(serverPathConfigKey)) {
+          // TODO although this gets the job done (restarting the extension)
+          // it's pretty jarring- ideally we'd JUST restart the LSP server.
+          window.showInformationMessage(
+            `Changing ${serverPathConfigKey} requires reloading the window.`,
+            'Reload now'
+          ).then((selection) => {
+            if (selection) {
+              void commands.executeCommand("workbench.action.reloadWindow");
+            }
+          })
+        }
+    }));
+
+    const serverOpts = getServerExecutableOrShowErrors(folder, ctx);
     if (!serverOpts) {
       return; // no usable executable found
     }
