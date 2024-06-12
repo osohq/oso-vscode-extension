@@ -33,7 +33,7 @@ import {
   TELEMETRY_INTERVAL,
 } from './telemetry';
 
-import { osoConfigKey, projectRootsKey, serverPathConfig, validationsKey } from './common';
+import { osoConfigKey, projectRootsKey, serverPathKey, validationsKey } from './common';
 import { getServerExecutableOrShowErrors } from './getServerExecutable';
 
 
@@ -59,6 +59,7 @@ const outputChannel = window.createOutputChannel(extensionName);
 const fullProjectRootsKey = `${osoConfigKey}.${projectRootsKey}`;
 const fullValidationsKey =
   `${osoConfigKey}.${validationsKey}` as 'oso.polarLanguageServer.validations';
+const fullServerPathKey = `${osoConfigKey}.${serverPathKey}`;
 
 // Bi-level map from workspaceFolder -> projectRoot -> client & metrics
 // recorder.
@@ -162,8 +163,6 @@ async function validateRoots(root: Uri, candidates: string[]) {
 
 
 async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
-  const server = ctx.asAbsolutePath(join('out', 'server.js'));
-
   const rawProjectRoots = workspace
     .getConfiguration(osoConfigKey, folder)
     .get<string[]>(projectRootsKey, []);
@@ -178,6 +177,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 
   const workspaceFolderClients: WorkspaceFolderClients = new Map();
   const polarFilesIncluded: Set<string> = new Set();
+
 
   for (const root of roots) {
     // Watch `FileChangeType.Deleted` events for Polar files in the current
@@ -210,26 +210,9 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(deleteWatcher);
     ctx.subscriptions.push(createChangeWatcher);
 
-
-    ctx.subscriptions.push(workspace.onDidChangeConfiguration(async (e) => {
-      const serverPathConfigKey = `${osoConfigKey}.${serverPathConfig}`;
-        if (e.affectsConfiguration(serverPathConfigKey)) {
-          // TODO although this gets the job done (restarting the extension)
-          // it's pretty jarring- ideally we'd JUST restart the LSP server.
-          window.showInformationMessage(
-            `Changing ${serverPathConfigKey} requires reloading the window.`,
-            'Reload now'
-          ).then((selection) => {
-            if (selection) {
-              void commands.executeCommand("workbench.action.reloadWindow");
-            }
-          })
-        }
-    }));
-
     const serverOpts = getServerExecutableOrShowErrors(folder, ctx);
     if (!serverOpts) {
-      return; // no usable executable found
+      break; // no usable executable found
     }
 
     const clientOpts: LanguageClientOptions = {
@@ -288,19 +271,23 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 }
 
 
-function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
+async function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
   // Try flushing latest event in case one's in the chamber.
   recordTelemetry.flush();
-  return client.stop();
+  // TODO our current LSP implementation DOES NOT correctly handle the `shutdown` or `exit` commands,
+  // making this call throw an error and leaving an orphaned LSP process lying around.
+  // we probably shouldn't cut a release of this until that's fixed!
+  await client.stop();
 }
 
 async function stopClients(workspaceFolder: string) {
   const workspaceFolderClients = clients.get(workspaceFolder);
   if (workspaceFolderClients) {
-    for (const client of workspaceFolderClients.values())
+    for (const client of workspaceFolderClients.values()) {
       await stopClient(client);
+    }
   }
   clients.delete(workspaceFolder);
 }
@@ -353,7 +340,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
       const affected = folders.filter(folder => {
         return (
           e.affectsConfiguration(fullProjectRootsKey, folder) ||
-          e.affectsConfiguration(fullValidationsKey, folder)
+          e.affectsConfiguration(fullValidationsKey, folder) ||
+          e.affectsConfiguration(fullServerPathKey, folder)
         );
       });
 

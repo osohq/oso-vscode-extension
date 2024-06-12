@@ -78,19 +78,6 @@
           "default": [],
           "markdownDescription": "When a workspace contains multiple distinct Oso policies, list of **POSIX-style, relative paths** from workspace folder root to directory containing each Oso policy."
         },
-        "oso.polarLanguageServer.validations": {
-          "type": "string",
-          "enum": [
-            "cloud",
-            "library"
-          ],
-          "enumDescriptions": [
-            "Oso Cloud",
-            "the Oso Open-Source library"
-          ],
-          "default": "library",
-          "markdownDescription": "Select whether to validate Polar policies for [Oso Cloud](https://cloud-docs.osohq.com/) or [the Oso Open-Source library](https://github.com/osohq/oso)."
-        },
         "oso.polarLanguageServer.trace.server": {
           "type": "string",
           "enum": [
@@ -108,24 +95,7 @@
           "description": "Path to oso-cloud binary (points to oso-cloud on the user's path by default)."
         }
       }
-    },
-    "walkthroughs": [
-      {
-        "id": "oso",
-        "title": "Get started with Oso",
-        "description": "Use the appropriate settings to get the most out of Oso.",
-        "steps": [
-          {
-            "id": "usecloud",
-            "title": "Polar validations",
-            "description": "Select whether Polar policies should be validated for **Oso Cloud** or the **Oso Open-Source Library**.\n[Oso Cloud](command:oso.useCloudValidation)\n[Oso Open-Source Library](command:oso.useLibraryValidation)",
-            "media": {
-              "markdown": "media/polar_validations.md"
-            }
-          }
-        ]
-      }
-    ]
+    }
   },
   "scripts": {
     "package": "vsce package --yarn --githubBranch main --out oso.vsix",

@@ -1,6 +1,6 @@
 
 import * as vscode from 'vscode';
-import { osoConfigKey, serverPathConfig } from './common';
+import { osoConfigKey, serverPathKey } from './common';
 import { spawnSync } from 'child_process';
 import semverSatisfies = require('semver/functions/satisfies');
 import * as os from 'os';
@@ -33,7 +33,7 @@ export function getServerExecutableOrShowErrors(folder: vscode.WorkspaceFolder, 
  * @returns the configured path to the oso-cloud binary for this workspace
  */
 function getBinaryPath(folder: vscode.WorkspaceFolder): string {
-  let customPath = vscode.workspace.getConfiguration(osoConfigKey, folder).get<string | null>(serverPathConfig);
+  let customPath = vscode.workspace.getConfiguration(osoConfigKey, folder).get<string | null>(serverPathKey);
   if (customPath !== null && customPath.startsWith("~/")) {
     customPath = os.homedir() + customPath.slice(1); // expand ~ into absolute path
   }
@@ -45,6 +45,8 @@ function installOsoCloud(terminalWindowTitle: string, ctx: vscode.ExtensionConte
   const terminal = vscode.window.createTerminal({ name: terminalWindowTitle });
   ctx.subscriptions.push(vscode.window.onDidCloseTerminal((t) => {
     if (t === terminal && t.exitStatus.code === 0) {
+      // TODO honestly prob just need to call updateClients(ctx)
+      // but it's kinda gross to thread that through here
       vscode.window.showInformationMessage(
         `To use the newly installed oso-cloud binary, you must reload the window.`,
         'Reload now'
@@ -95,7 +97,7 @@ function ensureBinaryExists(path: string, ctx: vscode.ExtensionContext): boolean
       });
     } else {
       vscode.window.showErrorMessage(
-        `Couldn't find an oso-cloud binary at \`${path}\`. Either remove \`${osoConfigKey}.${serverPathConfig}\`` +
+        `Couldn't find an oso-cloud binary at \`${path}\`. Either remove \`${osoConfigKey}.${serverPathKey}\`` +
         " from your `settings.json` or ensure a runnable binary exists at that path."
       );
     }
