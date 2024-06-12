@@ -33,7 +33,7 @@ import {
   TELEMETRY_INTERVAL,
 } from './telemetry';
 
-import { osoConfigKey, projectRootsKey, serverPathKey, validationsKey } from './common';
+import { osoConfigKey, projectRootsKey, serverPathKey } from './common';
 import { getServerExecutableOrShowErrors } from './getServerExecutable';
 
 
@@ -57,8 +57,6 @@ const extensionName = 'Polar Language Server';
 const outputChannel = window.createOutputChannel(extensionName);
 
 const fullProjectRootsKey = `${osoConfigKey}.${projectRootsKey}`;
-const fullValidationsKey =
-  `${osoConfigKey}.${validationsKey}` as 'oso.polarLanguageServer.validations';
 const fullServerPathKey = `${osoConfigKey}.${serverPathKey}`;
 
 // Bi-level map from workspaceFolder -> projectRoot -> client & metrics
@@ -340,34 +338,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
       const affected = folders.filter(folder => {
         return (
           e.affectsConfiguration(fullProjectRootsKey, folder) ||
-          e.affectsConfiguration(fullValidationsKey, folder) ||
           e.affectsConfiguration(fullServerPathKey, folder)
         );
       });
 
       await updateClients(context)({ added: affected, removed: affected });
-    })
-  );
-
-  context.subscriptions.push(
-    commands.registerCommand('oso.useCloudValidation', async () => {
-      await Promise.race([
-        new Promise(resolve => setTimeout(resolve, 1000)),
-        workspace
-          .getConfiguration(osoConfigKey)
-          .update(validationsKey, 'cloud'),
-      ]);
-    })
-  );
-
-  context.subscriptions.push(
-    commands.registerCommand('oso.useLibraryValidation', async () => {
-      await Promise.race([
-        new Promise(resolve => setTimeout(resolve, 1000)),
-        workspace
-          .getConfiguration(osoConfigKey)
-          .update(validationsKey, 'library'),
-      ]);
     })
   );
 
