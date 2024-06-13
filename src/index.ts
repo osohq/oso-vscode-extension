@@ -33,9 +33,13 @@ import {
   TELEMETRY_INTERVAL,
 } from './telemetry';
 
-import { osoConfigKey, projectRootsKey, restartServerEvent, serverPathKey } from './common';
+import {
+  osoConfigKey,
+  projectRootsKey,
+  restartServerEvent,
+  serverPathKey,
+} from './common';
 import { getServerExecutableOrShowErrors } from './getServerExecutable';
-
 
 // TODO(gj): think about what it would take to support `load_str()` via
 // https://code.visualstudio.com/api/language-extensions/embedded-languages
@@ -159,7 +163,6 @@ async function validateRoots(root: Uri, candidates: string[]) {
   return projectRoots;
 }
 
-
 async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
   const rawProjectRoots = workspace
     .getConfiguration(osoConfigKey, folder)
@@ -175,7 +178,6 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 
   const workspaceFolderClients: WorkspaceFolderClients = new Map();
   const polarFilesIncluded: Set<string> = new Set();
-
 
   for (const root of roots) {
     // Watch `FileChangeType.Deleted` events for Polar files in the current
@@ -269,14 +271,13 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
   clients.set(folder.uri.toString(), workspaceFolderClients);
 }
 
-
 function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
   // Try flushing latest event in case one's in the chamber.
   recordTelemetry.flush();
   return client.stop();
- }
+}
 
 async function stopClients(workspaceFolder: string) {
   const workspaceFolderClients = clients.get(workspaceFolder);
@@ -316,7 +317,7 @@ async function restartClients(context: ExtensionContext) {
 // Create function in global context so we have access to it in `deactivate()`.
 // See corresponding comment in `activate()` where we update the stored
 // function.
-let persistState: (state: TelemetryCounters) => Promise<void> = async () => { }; // eslint-disable-line @typescript-eslint/no-empty-function
+let persistState: (state: TelemetryCounters) => Promise<void> = async () => {}; // eslint-disable-line @typescript-eslint/no-empty-function
 
 export async function activate(context: ExtensionContext): Promise<void> {
   // Seed extension-local state from persisted VS Code memento-backed state.
@@ -392,4 +393,3 @@ export async function deactivate(): Promise<void> {
   // Persist monthly/daily counter/timestamp state.
   return persistState(counters);
 }
-

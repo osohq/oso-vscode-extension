@@ -312,7 +312,7 @@ async function sendEvents(): Promise<number> {
         workspace_folder: hash(folder),
         ...diagnosticStats,
         ...loadStats,
-        ...lspStats
+        ...lspStats,
       },
     })
   );

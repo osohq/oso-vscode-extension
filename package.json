@@ -102,8 +102,8 @@
     "typecheck": "tsc --noEmit",
     "fix": "gts fix",
     "lint": "gts lint -- . --max-warnings 0",
-    "fmtwrite": "prettier --write 'client/**/*.ts' 'server/**/*.ts' 'test/**/*.ts'",
-    "fmtcheck": "prettier --check 'client/**/*.ts' 'server/**/*.ts' 'test/**/*.ts'",
+    "fmtwrite": "prettier --write 'src/**/*.ts'",
+    "fmtcheck": "prettier --check 'src/**/*.ts'",
     "test": "tsc --build test && yarn esbuild-all && node ./out/test/src/runTest.js",
     "build": "tsc --build",
     "vscode:prepublish": "yarn esbuild-server --minify && yarn esbuild-client --minify"
