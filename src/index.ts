@@ -212,7 +212,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 
     const serverOpts = getServerExecutableOrShowErrors(folder, ctx);
     if (!serverOpts) {
-      break; // no usable executable found
+      continue; // no usable executable found, but maybe the next root (which may have its own config) has a usable executable
     }
 
     const clientOpts: LanguageClientOptions = {
