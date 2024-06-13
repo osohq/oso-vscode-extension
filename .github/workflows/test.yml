@@ -19,6 +19,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '22'
+      - name: Install yarn
+        run: npm install -g yarn
+      - name: Install dependencies
+        run: yarn install
       - name: Check formatting of JS library
         run: npm run fmtcheck
       - name: Typecheck
