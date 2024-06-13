@@ -24,8 +24,8 @@ jobs:
       - name: Install dependencies
         run: yarn install
       - name: Check formatting of JS library
-        run: npm run fmtcheck
+        run: yarn run fmtcheck
       - name: Typecheck
-        run: npm run typecheck
+        run: yarn run typecheck
       - name: Lint JS library
-        run: npm run lint
+        run: yarn run lint

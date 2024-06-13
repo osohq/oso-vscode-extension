@@ -104,9 +104,8 @@
     "lint": "gts lint -- . --max-warnings 0",
     "fmtwrite": "prettier --write 'src/**/*.ts'",
     "fmtcheck": "prettier --check 'src/**/*.ts'",
-    "test": "tsc --build test && yarn esbuild-all && node ./out/test/src/runTest.js",
     "build": "tsc --build",
-    "vscode:prepublish": "yarn esbuild-server --minify && yarn esbuild-client --minify"
+    "vscode:prepublish": "yarn esbuild --minify"
   },
   "dependencies": {
     "lodash": "^4.17.21",
@@ -121,11 +120,9 @@
     "@types/node": "^16.10.3",
     "@types/semver": "^7.3.8",
     "@types/vscode": "~1.78.1",
-    "@vscode/test-electron": "^1.6.2",
     "esbuild": "^0.13.14",
     "glob": "^7.2.0",
     "gts": "^3.1.0",
-    "mocha": "^9.1.3",
     "ovsx": "^0.7.1",
     "typescript": "^4.4.3",
     "vsce": "^2.15.0"
