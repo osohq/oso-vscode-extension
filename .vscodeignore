@@ -6,10 +6,7 @@
 !language-configuration.json
 !LICENSE
 !oso_logo.png
-!out/client.js
-!out/polar_language_server_bg.wasm
-!out/polar_cloud_language_server_bg.wasm
-!out/server.js
+!out/index.js
 !package.json
 !README.md
 !polar-grammar/syntaxes/polar.tmLanguage.json

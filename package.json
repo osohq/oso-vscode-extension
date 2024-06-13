@@ -23,7 +23,7 @@
   "engines": {
     "vscode": "^1.78.0"
   },
-  "main": "./out/src/index.js",
+  "main": "./out/index.js",
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -105,7 +105,7 @@
     "fmtwrite": "prettier --write 'src/**/*.ts'",
     "fmtcheck": "prettier --check 'src/**/*.ts'",
     "build": "tsc --build",
-    "vscode:prepublish": "yarn esbuild --minify"
+    "vscode:prepublish": "yarn esbuild --bundle --outdir=out --external:vscode --format=cjs --platform=node --minify --sourcemap index=./src"
   },
   "dependencies": {
     "lodash": "^4.17.21",
