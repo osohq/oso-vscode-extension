@@ -12,7 +12,7 @@ import {
 } from 'vscode-languageclient';
 
 import { version as extversion } from '../package.json';
-import { osoConfigKey, telemetryKey, validationsKey } from './common';
+import { osoConfigKey, telemetryKey } from './common';
 
 const ONE_HOUR_IN_MS = 1_000 * 60 * 60;
 const ONE_DAY_IN_MS = ONE_HOUR_IN_MS * 24;
@@ -118,10 +118,6 @@ const vscodeCommonProperties = {
   })(),
   remotename: env.remoteName || 'none',
 };
-
-const validationkind: string = workspace
-  .getConfiguration(osoConfigKey)
-  .get(validationsKey, 'unknown');
 
 const MIXPANEL_PROJECT_TOKEN = 'd14a9580b894059dffd19437b7ddd7be';
 const mixpanel = Mixpanel.init(MIXPANEL_PROJECT_TOKEN, { protocol: 'https' });
@@ -296,7 +292,6 @@ type MixpanelMetadata = {
   product: string;
   uikind: string;
   remotename: string;
-  validationkind: string;
 };
 
 type MixpanelEvent = { properties: MixpanelMetadata } & MixpanelLoadEvent;
@@ -317,8 +312,7 @@ async function sendEvents(): Promise<number> {
         workspace_folder: hash(folder),
         ...diagnosticStats,
         ...loadStats,
-        ...lspStats,
-        validationkind,
+        ...lspStats
       },
     })
   );

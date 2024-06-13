@@ -1,6 +1,6 @@
 
 import * as vscode from 'vscode';
-import { osoConfigKey, serverPathKey } from './common';
+import { osoConfigKey, restartServerEvent, serverPathKey } from './common';
 import { spawnSync } from 'child_process';
 import semverSatisfies = require('semver/functions/satisfies');
 import * as os from 'os';
@@ -43,18 +43,9 @@ function getBinaryPath(folder: vscode.WorkspaceFolder): string {
 
 function installOsoCloud(terminalWindowTitle: string, ctx: vscode.ExtensionContext) {
   const terminal = vscode.window.createTerminal({ name: terminalWindowTitle });
-  ctx.subscriptions.push(vscode.window.onDidCloseTerminal((t) => {
+  ctx.subscriptions.push(vscode.window.onDidCloseTerminal(async (t) => {
     if (t === terminal && t.exitStatus.code === 0) {
-      // TODO honestly prob just need to call updateClients(ctx)
-      // but it's kinda gross to thread that through here
-      vscode.window.showInformationMessage(
-        `To use the newly installed oso-cloud binary, you must reload the window.`,
-        'Reload now'
-      ).then((selection) => {
-        if (selection) {
-          void vscode.commands.executeCommand("workbench.action.reloadWindow");
-        }
-      })
+        await vscode.commands.executeCommand(restartServerEvent);
     }
   }));
   terminal.show();

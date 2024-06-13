@@ -33,7 +33,7 @@ import {
   TELEMETRY_INTERVAL,
 } from './telemetry';
 
-import { osoConfigKey, projectRootsKey, serverPathKey } from './common';
+import { osoConfigKey, projectRootsKey, restartServerEvent, serverPathKey } from './common';
 import { getServerExecutableOrShowErrors } from './getServerExecutable';
 
 
@@ -235,7 +235,8 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(client.onTelemetry(recordTelemetry));
 
     // Start client and mark it for cleanup when the extension is deactivated.
-    ctx.subscriptions.push(client.start());
+    await client.start();
+    ctx.subscriptions.push({ dispose: client.dispose });
 
     // When a Polar document in `root` (even documents not currently open in VS
     // Code) is created or changed, trigger a [`didOpen`][didOpen] event if the
@@ -269,22 +270,25 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 }
 
 
-async function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
+function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
   // Try flushing latest event in case one's in the chamber.
   recordTelemetry.flush();
-  // TODO our current LSP implementation DOES NOT correctly handle the `shutdown` or `exit` commands,
-  // making this call throw an error and leaving an orphaned LSP process lying around.
-  // we probably shouldn't cut a release of this until that's fixed!
-  await client.stop();
-}
+  return client.stop();
+ }
 
 async function stopClients(workspaceFolder: string) {
   const workspaceFolderClients = clients.get(workspaceFolder);
   if (workspaceFolderClients) {
     for (const client of workspaceFolderClients.values()) {
-      await stopClient(client);
+      try {
+        await stopClient(client);
+      } catch (e) {
+        // TODO until our LSP implements both the `shutdown` and `exit` messages, `stopClient` may throw errors.
+        // We probably shouldn't release this until that's fixed.
+        console.error(e);
+      }
     }
   }
   clients.delete(workspaceFolder);
@@ -293,11 +297,20 @@ async function stopClients(workspaceFolder: string) {
 function updateClients(context: ExtensionContext) {
   return async function ({ added, removed }: WorkspaceFoldersChangeEvent) {
     // Clean up clients for removed folders.
-    for (const folder of removed) await stopClients(folder.uri.toString());
+    for (const folder of removed) {
+      await stopClients(folder.uri.toString());
+    }
 
     // Create clients for added folders.
-    for (const folder of added) await startClients(folder, context);
+    for (const folder of added) {
+      await startClients(folder, context);
+    }
   };
+}
+
+async function restartClients(context: ExtensionContext) {
+  const folders = workspace.workspaceFolders || [];
+  await updateClients(context)({ added: folders, removed: folders });
 }
 
 // Create function in global context so we have access to it in `deactivate()`.
@@ -343,6 +356,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
       });
 
       await updateClients(context)({ added: affected, removed: affected });
+    })
+  );
+
+  context.subscriptions.push(
+    commands.registerCommand(restartServerEvent, () => {
+      restartClients(context);
     })
   );
 
