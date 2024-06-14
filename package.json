@@ -104,8 +104,8 @@
     "lint": "gts lint -- . --max-warnings 0",
     "fmtwrite": "prettier --write 'src/**/*.ts'",
     "fmtcheck": "prettier --check 'src/**/*.ts'",
-    "build": "tsc --build",
-    "vscode:prepublish": "yarn esbuild --bundle --outdir=out --external:vscode --format=cjs --platform=node --minify --sourcemap index=./src"
+    "build": "yarn esbuild --bundle --outdir=out --external:vscode --format=cjs --platform=node --sourcemap index=./src",
+    "vscode:prepublish": "yarn build --minify"
   },
   "dependencies": {
     "lodash": "^4.17.21",
