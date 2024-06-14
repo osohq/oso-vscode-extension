@@ -236,9 +236,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     const recordTelemetry = debounce(event => recordEvent(root, event), 1_000);
     ctx.subscriptions.push(client.onTelemetry(recordTelemetry));
 
-    // Start client and mark it for cleanup when the extension is deactivated.
     await client.start();
-    ctx.subscriptions.push({ dispose: client.dispose });
 
     // When a Polar document in `root` (even documents not currently open in VS
     // Code) is created or changed, trigger a [`didOpen`][didOpen] event if the
@@ -271,12 +269,15 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
   clients.set(folder.uri.toString(), workspaceFolderClients);
 }
 
-function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
+async function stopClient([client, recordTelemetry]: WorkspaceFolderClient, dispose?: boolean) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
   // Try flushing latest event in case one's in the chamber.
   recordTelemetry.flush();
-  return client.stop();
+  await client.stop();
+  if (dispose) {
+    await client.dispose();
+  }
 }
 
 async function stopClients(workspaceFolder: string) {
@@ -384,7 +385,7 @@ export async function deactivate(): Promise<void> {
   await Promise.all(
     [...clients.values()]
       .flatMap(workspaceFolderClients => [...workspaceFolderClients.values()])
-      .map(stopClient)
+      .map((c) => stopClient(c, true))
   );
 
   // Flush telemetry queue on shutdown.
