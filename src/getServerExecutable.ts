@@ -143,6 +143,7 @@ function ensureBinaryIsFresh(
   path: string,
   ctx: vscode.ExtensionContext
 ): boolean {
+  return true;
   const { version, updateAvailable } = extractVersionInfo(path);
   const tooOld = !semverSatisfies(version, '>=0.15.0'); // Minimum version that has `oso-cloud experimental lsp`
 
