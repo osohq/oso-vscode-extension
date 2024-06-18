@@ -219,7 +219,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
       // TODO(gj): seems like I should be able to use a RelativePattern here, but
       // the TS type for DocumentFilter.pattern doesn't seem to like that.
       documentSelector: [
-        { language: 'polar', pattern: `${root.fsPath}/**/*.polar` },
+        { language: 'polar', pattern: `${root.fsPath}/**/*.polar`, scheme: 'file'}, // ignore preview windows, etc
       ],
       synchronize: { fileEvents: deleteWatcher },
       diagnosticCollectionName: extensionName,
