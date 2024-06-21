@@ -7,6 +7,8 @@ import { Executable } from 'vscode-languageclient/node';
 
 const DEFAULT_OSO_CLOUD_BINARY_PATH = 'oso-cloud';
 
+const REQUIRED_OSO_CLOUD_VERSION = '>=0.18.0';
+
 /**
  * Returns an Executable for running the Polar LSP in the given workspace folder.
  * Also checks to ensure that the binary is installed and sufficiently new. If not, shows the user
@@ -27,7 +29,7 @@ export function getServerExecutableOrShowErrors(
 
   return {
     command: path,
-    args: ['experimental', 'lsp'],
+    args: ['lsp'],
   };
 }
 
@@ -144,7 +146,7 @@ function ensureBinaryIsFresh(
   ctx: vscode.ExtensionContext
 ): boolean {
   const { version, updateAvailable } = extractVersionInfo(path);
-  const tooOld = !semverSatisfies(version, '>=0.15.0'); // Minimum version that has `oso-cloud experimental lsp`
+  const tooOld = !semverSatisfies(version, REQUIRED_OSO_CLOUD_VERSION); // Minimum version that has `oso-cloud lsp`
 
   if (tooOld) {
     const updateIt = 'Update the Oso Cloud CLI';
