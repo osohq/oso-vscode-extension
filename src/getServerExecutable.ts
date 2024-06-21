@@ -89,25 +89,25 @@ function ensureBinaryExists(
 
   if (!binaryExists) {
     if (path === DEFAULT_OSO_CLOUD_BINARY_PATH) {
-      const installIt = 'Install oso-cloud';
+      const installIt = 'Install the Oso Cloud CLI';
       const showMeInstructions = 'Show install instructions';
       vscode.window
         .showErrorMessage(
-          "Couldn't find an oso-cloud binary on your path." +
-            ' Install oso-cloud and add it to your path?',
+          "Couldn't find the Oso Cloud CLI on your path." +
+            ' Install the Oso Cloud CLI and add it to your path?',
           installIt,
           showMeInstructions
         )
         .then(selection => {
           if (selection === installIt) {
-            installOsoCloud('Install oso-cloud', ctx);
+            installOsoCloud('Install the Oso Cloud CLI', ctx);
           } else if (selection === showMeInstructions) {
             openCLIDocs();
           }
         });
     } else {
       vscode.window.showErrorMessage(
-        `Couldn't find an oso-cloud binary at \`${path}\`. Either remove \`${osoConfigKey}.${serverPathKey}\`` +
+        `Couldn't find the Oso Cloud CLI at \`${path}\`. Either remove \`${osoConfigKey}.${serverPathKey}\`` +
           ' from your `settings.json` or ensure a runnable binary exists at that path.'
       );
     }
@@ -125,7 +125,7 @@ function extractVersionInfo(osoCloudBinaryPath: string) {
   const match = versionOutput.match(/^version: (?<version>.+) sha: .+/);
   if (!match || !match.groups) {
     throw new Error(
-      `Got an unexpected output format from \`${osoCloudBinaryPath} version\`- please double-check that this is a runnable oso-cloud binary.`
+      `Got an unexpected output format from \`${osoCloudBinaryPath} version\`- please double-check that this is a runnable Oso Cloud CLI binary.`
     );
   }
   const { version } = match.groups;
@@ -147,33 +147,33 @@ function ensureBinaryIsFresh(
   const tooOld = !semverSatisfies(version, '>=0.15.0'); // Minimum version that has `oso-cloud experimental lsp`
 
   if (tooOld) {
-    const updateIt = 'Update oso-cloud';
+    const updateIt = 'Update the Oso Cloud CLI';
     const showMe = 'Show me how';
     vscode.window
       .showErrorMessage(
-        "This extension doesn't support your version of oso-cloud. To continue, update oso-cloud.",
+        "This extension doesn't support your version of the Oso Cloud CLI. To continue, update the Oso Cloud CLI.",
         updateIt,
         showMe
       )
       .then(selection => {
         if (selection === updateIt) {
-          installOsoCloud('Update oso-cloud', ctx);
+          installOsoCloud('Update the Oso Cloud CLI', ctx);
         } else if (selection === showMe) {
           openCLIDocs();
         }
       });
   } else if (updateAvailable) {
-    const updateIt = 'Update oso-cloud';
+    const updateIt = 'Update the Oso Cloud CLI';
     const showMe = 'Show me how';
     vscode.window
       .showWarningMessage(
-        'An update is available to oso-cloud. Update it now?',
+        'An update is available to the Oso Cloud CLI. Update it now?',
         updateIt,
         showMe
       )
       .then(selection => {
         if (selection === updateIt) {
-          installOsoCloud('Update oso-cloud', ctx);
+          installOsoCloud('Update the Oso Cloud CLI', ctx);
         } else if (selection === showMe) {
           openCLIDocs();
         }
