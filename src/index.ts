@@ -273,9 +273,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
   clients.set(folder.uri.toString(), workspaceFolderClients);
 }
 
-async function stopClient(
-  [client, recordTelemetry]: WorkspaceFolderClient
-) {
+async function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
   // Try flushing latest event in case one's in the chamber.
