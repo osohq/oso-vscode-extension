@@ -274,17 +274,13 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
 }
 
 async function stopClient(
-  [client, recordTelemetry]: WorkspaceFolderClient,
-  dispose?: boolean
+  [client, recordTelemetry]: WorkspaceFolderClient
 ) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
   // Try flushing latest event in case one's in the chamber.
   recordTelemetry.flush();
   await client.stop();
-  if (dispose) {
-    await client.dispose();
-  }
 }
 
 async function stopClients(workspaceFolder: string) {
@@ -392,7 +388,7 @@ export async function deactivate(): Promise<void> {
   await Promise.all(
     [...clients.values()]
       .flatMap(workspaceFolderClients => [...workspaceFolderClients.values()])
-      .map(c => stopClient(c, true))
+      .map(stopClient)
   );
 
   // Flush telemetry queue on shutdown.
