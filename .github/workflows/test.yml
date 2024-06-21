@@ -15,10 +15,6 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      - name: Use Node.js 22
-        uses: actions/setup-node@v1
-        with:
-          node-version: '22'
       - name: Install yarn
         run: npm install -g yarn
       - name: Install dependencies
