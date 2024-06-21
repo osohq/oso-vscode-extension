@@ -94,7 +94,13 @@
           "description": "Path to oso-cloud binary (points to oso-cloud on the user's path by default)."
         }
       }
-    }
+    },
+    "commands": [
+      {
+        "command": "oso.polarLanguageServer.restartServer",
+        "title": "Oso: Restart Polar Language Server"
+      }
+    ]
   },
   "scripts": {
     "package": "vsce package --yarn --githubBranch main --out oso.vsix",

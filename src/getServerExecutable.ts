@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { osoConfigKey, restartServerEvent, serverPathKey } from './common';
+import { osoConfigKey, restartServerCommand, serverPathKey } from './common';
 import { spawnSync } from 'child_process';
 import semverSatisfies = require('semver/functions/satisfies');
 import * as os from 'os';
@@ -53,7 +53,7 @@ function installOsoCloud(
   ctx.subscriptions.push(
     vscode.window.onDidCloseTerminal(async t => {
       if (t === terminal && t.exitStatus.code === 0) {
-        await vscode.commands.executeCommand(restartServerEvent);
+        await vscode.commands.executeCommand(restartServerCommand);
       }
     })
   );

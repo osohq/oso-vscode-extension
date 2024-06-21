@@ -3,4 +3,4 @@ export const projectRootsKey = 'projectRoots';
 export const telemetryKey = 'metrics.enabled';
 export const serverPathKey = 'server.path';
 
-export const restartServerEvent = 'oso.polarLanguageServer.restartServer';
+export const restartServerCommand = 'oso.polarLanguageServer.restartServer';

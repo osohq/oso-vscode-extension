@@ -36,7 +36,7 @@ import {
 import {
   osoConfigKey,
   projectRootsKey,
-  restartServerEvent,
+  restartServerCommand,
   serverPathKey,
 } from './common';
 import { getServerExecutableOrShowErrors } from './getServerExecutable';
@@ -365,7 +365,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
   );
 
   context.subscriptions.push(
-    commands.registerCommand(restartServerEvent, () => {
+    commands.registerCommand(restartServerCommand, () => {
       restartClients(context);
     })
   );
