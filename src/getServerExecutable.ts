@@ -162,8 +162,7 @@ function ensureBinaryIsFresh(
           openCLIDocs();
         }
       });
-  }
-  if (updateAvailable && !tooOld) {
+  } else if (updateAvailable) {
     const updateIt = 'Update oso-cloud';
     const showMe = 'Show me how';
     vscode.window
