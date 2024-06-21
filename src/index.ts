@@ -16,6 +16,7 @@ import {
   commands,
 } from 'vscode';
 import {
+  Executable,
   LanguageClient,
   LanguageClientOptions,
   TransportKind,
@@ -32,9 +33,13 @@ import {
   TELEMETRY_INTERVAL,
 } from './telemetry';
 
-import { contributes } from '../../package.json';
-
-import { osoConfigKey, projectRootsKey, validationsKey } from './common';
+import {
+  osoConfigKey,
+  projectRootsKey,
+  restartServerCommand,
+  serverPathKey,
+} from './common';
+import { getServerExecutableOrShowErrors } from './getServerExecutable';
 
 // TODO(gj): think about what it would take to support `load_str()` via
 // https://code.visualstudio.com/api/language-extensions/embedded-languages
@@ -56,8 +61,7 @@ const extensionName = 'Polar Language Server';
 const outputChannel = window.createOutputChannel(extensionName);
 
 const fullProjectRootsKey = `${osoConfigKey}.${projectRootsKey}`;
-const fullValidationsKey =
-  `${osoConfigKey}.${validationsKey}` as 'oso.polarLanguageServer.validations';
+const fullServerPathKey = `${osoConfigKey}.${serverPathKey}`;
 
 // Bi-level map from workspaceFolder -> projectRoot -> client & metrics
 // recorder.
@@ -160,8 +164,6 @@ async function validateRoots(root: Uri, candidates: string[]) {
 }
 
 async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
-  const server = ctx.asAbsolutePath(join('out', 'server.js'));
-
   const rawProjectRoots = workspace
     .getConfiguration(osoConfigKey, folder)
     .get<string[]>(projectRootsKey, []);
@@ -208,22 +210,20 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     ctx.subscriptions.push(deleteWatcher);
     ctx.subscriptions.push(createChangeWatcher);
 
-    const language = workspace
-      .getConfiguration(osoConfigKey, folder)
-      .get<string>(
-        validationsKey,
-        contributes.configuration.properties[fullValidationsKey].default
-      );
-    const serverOpts = {
-      module: server,
-      transport: TransportKind.ipc,
-      args: [language],
-    };
+    const serverOpts = getServerExecutableOrShowErrors(folder, ctx);
+    if (!serverOpts) {
+      continue; // no usable executable found, but maybe the next root (which may have its own config) has a usable executable
+    }
+
     const clientOpts: LanguageClientOptions = {
       // TODO(gj): seems like I should be able to use a RelativePattern here, but
       // the TS type for DocumentFilter.pattern doesn't seem to like that.
       documentSelector: [
-        { language: 'polar', pattern: `${root.fsPath}/**/*.polar` },
+        {
+          language: 'polar',
+          pattern: `${root.fsPath}/**/*.polar`,
+          scheme: 'file',
+        }, // ignore preview windows, etc
       ],
       synchronize: { fileEvents: deleteWatcher },
       diagnosticCollectionName: extensionName,
@@ -240,8 +240,7 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
     const recordTelemetry = debounce(event => recordEvent(root, event), 1_000);
     ctx.subscriptions.push(client.onTelemetry(recordTelemetry));
 
-    // Start client and mark it for cleanup when the extension is deactivated.
-    ctx.subscriptions.push(client.start());
+    await client.start();
 
     // When a Polar document in `root` (even documents not currently open in VS
     // Code) is created or changed, trigger a [`didOpen`][didOpen] event if the
@@ -274,19 +273,26 @@ async function startClients(folder: WorkspaceFolder, ctx: ExtensionContext) {
   clients.set(folder.uri.toString(), workspaceFolderClients);
 }
 
-function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
+async function stopClient([client, recordTelemetry]: WorkspaceFolderClient) {
   // Clear any outstanding diagnostics.
   client.diagnostics?.clear();
   // Try flushing latest event in case one's in the chamber.
   recordTelemetry.flush();
-  return client.stop();
+  await client.stop();
 }
 
 async function stopClients(workspaceFolder: string) {
   const workspaceFolderClients = clients.get(workspaceFolder);
   if (workspaceFolderClients) {
-    for (const client of workspaceFolderClients.values())
-      await stopClient(client);
+    for (const client of workspaceFolderClients.values()) {
+      try {
+        await stopClient(client);
+      } catch (e) {
+        // TODO until our LSP implements both the `shutdown` and `exit` messages, `stopClient` may throw errors.
+        // We probably shouldn't release this until that's fixed.
+        console.error(e);
+      }
+    }
   }
   clients.delete(workspaceFolder);
 }
@@ -294,11 +300,20 @@ async function stopClients(workspaceFolder: string) {
 function updateClients(context: ExtensionContext) {
   return async function ({ added, removed }: WorkspaceFoldersChangeEvent) {
     // Clean up clients for removed folders.
-    for (const folder of removed) await stopClients(folder.uri.toString());
+    for (const folder of removed) {
+      await stopClients(folder.uri.toString());
+    }
 
     // Create clients for added folders.
-    for (const folder of added) await startClients(folder, context);
+    for (const folder of added) {
+      await startClients(folder, context);
+    }
   };
+}
+
+async function restartClients(context: ExtensionContext) {
+  const folders = workspace.workspaceFolders || [];
+  await updateClients(context)({ added: folders, removed: folders });
 }
 
 // Create function in global context so we have access to it in `deactivate()`.
@@ -339,7 +354,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
       const affected = folders.filter(folder => {
         return (
           e.affectsConfiguration(fullProjectRootsKey, folder) ||
-          e.affectsConfiguration(fullValidationsKey, folder)
+          e.affectsConfiguration(fullServerPathKey, folder)
         );
       });
 
@@ -348,24 +363,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
   );
 
   context.subscriptions.push(
-    commands.registerCommand('oso.useCloudValidation', async () => {
-      await Promise.race([
-        new Promise(resolve => setTimeout(resolve, 1000)),
-        workspace
-          .getConfiguration(osoConfigKey)
-          .update(validationsKey, 'cloud'),
-      ]);
-    })
-  );
-
-  context.subscriptions.push(
-    commands.registerCommand('oso.useLibraryValidation', async () => {
-      await Promise.race([
-        new Promise(resolve => setTimeout(resolve, 1000)),
-        workspace
-          .getConfiguration(osoConfigKey)
-          .update(validationsKey, 'library'),
-      ]);
+    commands.registerCommand(restartServerCommand, () => {
+      restartClients(context);
     })
   );
 

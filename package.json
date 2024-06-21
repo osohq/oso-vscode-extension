@@ -21,10 +21,9 @@
   },
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=8.10.0",
-    "vscode": "^1.52.0"
+    "vscode": "^1.78.0"
   },
-  "main": "./out/client.js",
+  "main": "./out/index.js",
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -72,24 +71,11 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^([^/]+\/)*[^/]+\/?$",
+            "pattern": "^([^/]+/)*[^/]+/?$",
             "patternErrorMessage": "Project root must be a POSIX-style relative path that doesn't begin with a forward slash and has its path segments separated by single forward slashes. E.g.: `mypath` or `my/path/` or `./my/path`"
           },
           "default": [],
           "markdownDescription": "When a workspace contains multiple distinct Oso policies, list of **POSIX-style, relative paths** from workspace folder root to directory containing each Oso policy."
-        },
-        "oso.polarLanguageServer.validations": {
-          "type": "string",
-          "enum": [
-            "cloud",
-            "library"
-          ],
-          "enumDescriptions": [
-            "Oso Cloud",
-            "the Oso Open-Source library"
-          ],
-          "default": "cloud",
-          "markdownDescription": "Select whether to validate Polar policies for [Oso Cloud](https://cloud-docs.osohq.com/) or [the Oso Open-Source library](https://github.com/osohq/oso)."
         },
         "oso.polarLanguageServer.trace.server": {
           "type": "string",
@@ -100,24 +86,19 @@
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
+        },
+        "oso.polarLanguageServer.server.path": {
+          "type": ["null", "string"],
+          "scope": "machine-overridable",
+          "default": null,
+          "description": "Path to oso-cloud binary (points to oso-cloud on the user's path by default)."
         }
       }
     },
-    "walkthroughs": [
+    "commands": [
       {
-        "id": "oso",
-        "title": "Get started with Oso",
-        "description": "Use the appropriate settings to get the most out of Oso.",
-        "steps": [
-          {
-            "id": "usecloud",
-            "title": "Polar validations",
-            "description": "Select whether Polar policies should be validated for **Oso Cloud** or the **Oso Open-Source Library**.\n[Oso Cloud](command:oso.useCloudValidation)\n[Oso Open-Source Library](command:oso.useLibraryValidation)",
-            "media": {
-              "markdown": "media/polar_validations.md"
-            }
-          }
-        ]
+        "command": "oso.polarLanguageServer.restartServer",
+        "title": "Oso: Restart Polar Language Server"
       }
     ]
   },
@@ -127,34 +108,27 @@
     "typecheck": "tsc --noEmit",
     "fix": "gts fix",
     "lint": "gts lint -- . --max-warnings 0",
-    "fmtwrite": "prettier --write 'client/**/*.ts' 'server/**/*.ts' 'test/**/*.ts'",
-    "fmtcheck": "prettier --check 'client/**/*.ts' 'server/**/*.ts' 'test/**/*.ts'",
-    "test": "tsc --build test && yarn esbuild-all && node ./out/test/src/runTest.js",
-    "esbuild-client": "esbuild client=./client/src --bundle --outdir=out --external:vscode --format=cjs --platform=node",
-    "esbuild-server": "esbuild server=./server/src --bundle --outdir=out --external:vscode --format=cjs --platform=node",
-    "esbuild-all": "yarn esbuild-server --sourcemap && yarn esbuild-client --sourcemap",
-    "vscode:prepublish": "yarn esbuild-server --minify && yarn esbuild-client --minify"
+    "fmtwrite": "prettier --write 'src/**/*.ts'",
+    "fmtcheck": "prettier --check 'src/**/*.ts'",
+    "build": "yarn esbuild --bundle --outdir=out --external:vscode --format=cjs --platform=node --sourcemap index=./src",
+    "vscode:prepublish": "yarn build --minify"
   },
   "dependencies": {
     "lodash": "^4.17.21",
     "mixpanel": "^0.14.0",
-    "vscode-languageclient": "^7.0.0",
-    "vscode-languageserver": "^7.0.0"
+    "semver": "^7.6.2",
+    "vscode-languageclient": "^8.1.0"
   },
   "devDependencies": {
     "@types/glob": "^7.1.4",
     "@types/lodash": "^4.14.177",
-    "@types/mocha": "^9.0.0",
     "@types/node": "^16.10.3",
     "@types/semver": "^7.3.8",
-    "@types/vscode": "^1.52.0",
-    "@vscode/test-electron": "^1.6.2",
+    "@types/vscode": "~1.78.1",
     "esbuild": "^0.13.14",
     "glob": "^7.2.0",
     "gts": "^3.1.0",
-    "mocha": "^9.1.3",
     "ovsx": "^0.7.1",
-    "semver": "^7.3.5",
     "typescript": "^4.4.3",
     "vsce": "^2.15.0"
   }
