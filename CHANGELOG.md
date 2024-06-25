@@ -1,4 +1,4 @@
 # CHANGELOG
 
-See https://docs.osohq.com/project/changelogs.html
+See https://www.osohq.com/docs/reference/client-apis/changelog
 
