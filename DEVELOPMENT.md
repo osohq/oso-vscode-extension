@@ -23,6 +23,7 @@
 #### Prerequisites
 
 - Bump the `version` in `package.json`.
+- Make sure the `osohq/polar-grammar` submodule is updated: `git submodule update --remote`.
 - Make sure the PR is merged into `main` and you've pulled down the latest for `main` after merging.
 - Download oso.vsix from GitHub:
    - Navigate to the [Actions][https://github.com/osohq/oso-vscode-extension/actions] tab.
@@ -30,7 +31,6 @@
    - Click on the most recent workflow run that you created.
    - Scroll down to the Artifacts section and download `oso_vscode_extension.zip` which contains `oso.vsix`.
    - Move `oso.vsix` to the `oso-vscode-extension` directory.
-- Run `make submodules` in the `oso-vscode-extension` directory (if you haven't already done so in this project).
 - Run `yarn` (if you haven't already done so in this project).
 - Login to Visual Studio Marketplace (the PAT is in 1Password: VSCode publish
   api key):
