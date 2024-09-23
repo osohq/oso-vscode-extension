@@ -9,7 +9,7 @@ jobs:
     name: Build Release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -19,7 +19,7 @@ jobs:
         run: yarn install
       - name: Build extension
         run: yarn run package
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: oso_vscode_extension
           path: oso.vsix
