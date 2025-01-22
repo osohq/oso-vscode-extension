@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "0.39.2",
+  "version": "0.39.3",
   "name": "oso",
   "displayName": "Oso",
   "author": "Oso Security Inc.",
@@ -88,7 +88,10 @@
           "description": "Traces the communication between VS Code and the language server."
         },
         "oso.polarLanguageServer.server.path": {
-          "type": ["null", "string"],
+          "type": [
+            "null",
+            "string"
+          ],
           "scope": "machine-overridable",
           "default": null,
           "description": "Path to oso-cloud binary (points to oso-cloud on the user's path by default)."

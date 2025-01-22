@@ -71,7 +71,7 @@ function installOsoCloud(
 function openCLIDocs() {
   vscode.env.openExternal(
     vscode.Uri.parse(
-      'https://www.osohq.com/docs/guides/develop/local-environment#install-the-oso-cloud-cli'
+      'https://www.osohq.com/docs/development/set-up-your-environment#install-the-oso-cloud-cli'
     )
   );
 }
