@@ -1,6 +1,6 @@
 {
   "private": true,
-  "version": "0.39.3",
+  "version": "0.39.4",
   "name": "oso",
   "displayName": "Oso",
   "author": "Oso Security Inc.",
@@ -10,15 +10,13 @@
   "keywords": [
     "authorization",
     "access control",
-    "multi-root ready"
+    "multi-root ready",
+    "polar"
   ],
   "categories": [
     "Programming Languages"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/osohq/oso"
-  },
+  "homepage": "https://www.osohq.com",
   "license": "Apache-2.0",
   "engines": {
     "vscode": "^1.78.0"
