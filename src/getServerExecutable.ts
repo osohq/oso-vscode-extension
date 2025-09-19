@@ -124,7 +124,9 @@ function extractVersionInfo(osoCloudBinaryPath: string) {
   let updateAvailable = stderr.includes('update available');
 
   let versionOutput = response.stdout.toString('utf8');
-  const match = versionOutput.match(/^version: (?<version>.+) sha: .+/);
+  const match = versionOutput.match(
+    /^version: (?<version>.+)(; built from dirty checkout of SHA: .+| sha: .+)/
+  );
   if (!match || !match.groups) {
     throw new Error(
       `Got an unexpected output format from \`${osoCloudBinaryPath} version\`- please double-check that this is a runnable Oso Cloud CLI binary.`
@@ -146,7 +148,9 @@ function ensureBinaryIsFresh(
   ctx: vscode.ExtensionContext
 ): boolean {
   const { version, updateAvailable } = extractVersionInfo(path);
-  const tooOld = !semverSatisfies(version, REQUIRED_OSO_CLOUD_VERSION); // Minimum version that has `oso-cloud lsp`
+  const tooOld =
+    version !== 'development' &&
+    !semverSatisfies(version, REQUIRED_OSO_CLOUD_VERSION); // Minimum version that has `oso-cloud lsp`
 
   if (tooOld) {
     const updateIt = 'Update the Oso Cloud CLI';
