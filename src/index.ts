@@ -120,7 +120,9 @@ function polarFilesInFolderPattern(folder: Uri) {
 // [didOpen]: https://code.visualstudio.com/api/references/vscode-api#workspace.onDidOpenTextDocument
 async function openPolarFilesInFolder(folder: Uri) {
   const pattern = polarFilesInFolderPattern(folder);
-  const uris = await workspace.findFiles(pattern);
+  // findFiles()'s default exclude only covers files.exclude (VCS dirs, OS
+  // junk), not search.exclude's node_modules entry, so it's passed explicitly.
+  const uris = await workspace.findFiles(pattern, '**/node_modules/**');
   return Promise.all(uris.map(openDocument));
 }
 
